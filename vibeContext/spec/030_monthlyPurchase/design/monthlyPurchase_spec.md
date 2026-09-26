@@ -248,15 +248,15 @@
 
 > 1차 확정 범위(1.1) 기준. 선행: `010_main` T10 ~ T13 (자동 연결 · 의존성) 만. 설정 · 단건구매 화면과 **의존 없음 — 병렬 구현**
 
-- [ ] T1. 진입점 `screens/monthlyPurchase/index.tsx` + `main/monthlyPurchase/ipc.ts` 생성 (자동 연결), 진입 조건 팝업 — R0
-- [ ] T2. main 설정값 읽기 · 복호화 + oracledb 접속 헬퍼 (이 모듈 안) — 모듈 경계
-- [ ] T3. `monthlyPurchase:search` — 상품유형 → `query_productList_{유형}.sql` 선택 실행, 바인드, 목록 · 건수 — R1.1 ~ R1.7
-- [ ] T4. [A] 상품 조회 화면 (상품유형 · 상품명, 자동 조회, 9컬럼, 페이지, 결과 없음 · 실패 표시) — R1
-- [ ] T5. 구매 확인 팝업 — R1.10
-- [ ] T6. `monthlyPurchase:agreements` — `query_agreementList.sql` — R2.2
-- [ ] T7. [C] 화면 (약정 · 결제 수단 · 할인 수단 · 금액 패널 · 액션바) + 약정 선택 규칙 단위 테스트 — R2
-- [ ] T8. `monthlyPurchase:purchase` — STB ID 조회 → IF-EPS-001 요청 · 응답 파싱 — R3, 4. 설계 › IF-EPS-001 요청 매핑
-- [ ] T9. [D] 구매완료 화면 + `[구매취소]` / `[구매 계속하기]` 복귀 (조건 · 페이지 유지 자동 조회) — R4, 2. 공통 동작
+- [x] T1. 진입점 `screens/monthlyPurchase/index.tsx` + `main/monthlyPurchase/ipc.ts` 생성 (자동 연결), 진입 조건 팝업 — R0
+- [x] T2. main 설정값 읽기 · 복호화 + oracledb 접속 헬퍼 (이 모듈 안) — 모듈 경계
+- [x] T3. `monthlyPurchase:search` — 상품유형 → `query_productList_{유형}.sql` 선택 실행, 바인드, 목록 · 건수 — R1.1 ~ R1.7
+- [x] T4. [A] 상품 조회 화면 (상품유형 · 상품명, 자동 조회, 9컬럼, 페이지, 결과 없음 · 실패 표시) — R1
+- [x] T5. 구매 확인 팝업 — R1.10
+- [x] T6. `monthlyPurchase:agreements` — `query_agreementList.sql` — R2.2
+- [x] T7. [C] 화면 (약정 · 결제 수단 · 할인 수단 · 금액 패널 · 액션바) + 약정 선택 규칙 단위 테스트 — R2
+- [x] T8. `monthlyPurchase:purchase` — STB ID 조회 → IF-EPS-001 요청 · 응답 파싱 — R3, 4. 설계 › IF-EPS-001 요청 매핑
+- [x] T9. [D] 구매완료 화면 + `[구매취소]` / `[구매 계속하기]` 복귀 (조건 · 페이지 유지 자동 조회) — R4, 2. 공통 동작
 - 추후: 쿠폰 · T멤버십 활성, 청구서 외 결제 수단
 
 ---

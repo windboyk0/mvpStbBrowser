@@ -1,0 +1,456 @@
+/* 월정액구매 — spec 4. 설계 › 레이아웃 (토큰: styles/tokens.css) */
+
+.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.danger {
+  color: var(--danger);
+}
+
+.ok {
+  color: #3ddc97;
+}
+
+.right {
+  text-align: right;
+}
+
+/* ===== [A] 상품 조회 ===== */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.searchLabel {
+  color: var(--text-2);
+  font-size: 15px;
+}
+
+.select,
+.input {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-1);
+  font: inherit;
+  font-size: 15px;
+}
+
+.select {
+  min-width: 140px;
+}
+
+.input {
+  flex: 1;
+}
+
+.select:focus,
+.input:focus {
+  outline: none;
+  border-color: var(--focus);
+}
+
+.searchBtn {
+  padding: 10px 26px;
+  border: 2px solid var(--primary);
+  border-radius: var(--radius);
+  background: var(--primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.searchBtn:hover {
+  border-color: var(--focus);
+}
+
+.count {
+  margin: 0 0 8px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.table th {
+  padding: 12px 16px;
+  background: #211e38;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.table th.right {
+  text-align: right;
+}
+
+.table td {
+  height: 44px;
+  padding: 0 16px;
+  border-top: 1px solid #2a2743;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table td.small {
+  font-size: 13px;
+}
+
+.clickRow {
+  cursor: pointer;
+}
+
+.clickRow:hover td {
+  background: var(--surface-2);
+}
+
+.table td.tableMessage {
+  height: 120px;
+  color: var(--text-3);
+  text-align: center;
+  white-space: normal;
+}
+
+.table td.tableMessage.danger {
+  color: var(--danger);
+}
+
+.pager {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.pager button {
+  min-width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 14px;
+}
+
+.pager button:hover:not(:disabled) {
+  border-color: var(--focus);
+}
+
+.pager button.pageOn {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.pager button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ===== 팝업 ===== */
+.modalBg {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: rgba(5, 4, 15, 0.7);
+}
+
+.modal {
+  width: 480px;
+  padding: 32px 32px 24px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.modalText {
+  margin: 8px 0 28px;
+  font-size: 19px;
+  line-height: 1.5;
+  word-break: keep-all;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modalBtn {
+  padding: 10px 24px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modalBtn:hover {
+  border-color: var(--focus);
+}
+
+.modalBtn.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.modalBtn.primary:hover {
+  border-color: var(--focus);
+}
+
+/* ===== [C] 약정 · 결제 · 할인 ===== */
+.purchase {
+  padding-bottom: 130px;
+}
+
+.purchaseHead {
+  margin: 0 0 28px;
+  text-align: center;
+}
+
+.purchaseHead h2 {
+  margin: 0 0 8px;
+  font-size: 38px;
+  font-weight: 600;
+}
+
+.purchaseHead p {
+  margin: 0;
+  color: #ddd;
+  font-size: 21px;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: 230px 200px 1fr 320px;
+  gap: 24px;
+}
+
+.colTitle {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.colMessage {
+  margin: 12px 0;
+  color: var(--text-3);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.colMessage.danger {
+  color: var(--danger);
+}
+
+.optRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: -2px;
+  padding: 15px 18px;
+  border: 2px solid transparent;
+  border-top-color: #25223a;
+  border-bottom-color: #25223a;
+  cursor: pointer;
+}
+
+.optRow:hover {
+  border-color: var(--focus);
+  border-radius: 8px;
+}
+
+.optName {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.optSel .optName {
+  color: var(--focus);
+}
+
+.optAmt {
+  margin-left: auto;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.optDis {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.optDis:hover {
+  border-color: transparent;
+  border-top-color: #25223a;
+  border-bottom-color: #25223a;
+  border-radius: 0;
+}
+
+.radio {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--text-3);
+  border-radius: 50%;
+}
+
+.optSel .radio {
+  border-color: var(--text-1);
+}
+
+.optSel .radio::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--focus);
+}
+
+.check {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--text-3);
+  border-radius: 3px;
+  font-size: 15px;
+}
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 22px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.sumLine {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 12px 0;
+  color: var(--text-2);
+  font-size: 15px;
+}
+
+.sumLine b {
+  color: var(--text-1);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.sumTotal b {
+  border-bottom: 3px solid var(--primary);
+  font-size: 26px;
+}
+
+.actionBar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 18px 40px;
+  border-top: 1px solid #1f1c36;
+  background: #120f26;
+}
+
+.barInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.barKey {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.barValue {
+  margin: 4px 0;
+  overflow: hidden;
+  font-size: 22px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.barValue span {
+  margin: 0 8px;
+  color: var(--text-3);
+  font-weight: 400;
+}
+
+.btn {
+  min-width: 130px;
+  padding: 14px 32px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.btn:hover:not(:disabled) {
+  border-color: var(--focus);
+}
+
+.btn.primary {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn.primary:hover:not(:disabled) {
+  border-color: var(--focus);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ===== [D] 구매완료 ===== */
+.done {
+  padding-top: 110px;
+  text-align: center;
+}
+
+.doneIcon {
+  font-size: 64px;
+  line-height: 1;
+}
+
+.doneText {
+  margin: 22px 0 40px;
+  font-size: 24px;
+  white-space: pre-line;
+}
+
+.doneActions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}

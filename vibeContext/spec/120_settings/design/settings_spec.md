@@ -129,9 +129,9 @@ STB ID, 주민법인일련번호는 입력받지 않고 서비스관리번호로
 
 > 선행: `010_main` T10 ~ T13 (자동 연결 · 의존성). 그 외 다른 화면과 **의존 없음 — 병렬 구현**
 
-- [ ] T1. main 설정 저장소 (electron-store `settings`, 계약 키, `dbPasswordEnc` = safeStorage + base64) — R2
-- [ ] T2. main 연결 테스트 (oracledb Thin 접속 → `query_stbId.sql` 실행 → 접속 종료) — R3
-- [ ] T3. `main/settings/ipc.ts` — `register(ipcMain)` 로 `settings:get` / `settings:save` / `settings:testConnection` 등록 — 3. 설계 › IPC
-- [ ] T4. 화면 `screens/settings/index.tsx` (입력 5칸, 검증, 비밀번호 마스킹 · 보기 토글, 저장 토스트) — R1, R2
-- [ ] T5. 연결 테스트 결과 표시 — R3
-- [ ] T6. 단위 테스트: 입력 검증 규칙 — R1.2
+- [x] T1. main 설정 저장소 (electron-store `settings`, 계약 키, `dbPasswordEnc` = safeStorage + base64) — R2
+- [x] T2. main 연결 테스트 (oracledb Thin 접속 → `query_stbId.sql` 실행 → 접속 종료) — R3
+- [x] T3. `main/settings/ipc.ts` — `register(ipcMain)` 로 `settings:get` / `settings:save` / `settings:testConnection` 등록 — 3. 설계 › IPC
+- [x] T4. 화면 `screens/settings/index.tsx` (입력 5칸, 검증, 비밀번호 마스킹 · 보기 토글, 저장 토스트) — R1, R2
+- [x] T5. 연결 테스트 결과 표시 — R3
+- [x] T6. 단위 테스트: 입력 검증 규칙 — R1.2
