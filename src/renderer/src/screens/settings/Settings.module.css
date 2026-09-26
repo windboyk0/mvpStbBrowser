@@ -1,0 +1,144 @@
+/* settings_spec 3. 설계 › 레이아웃 · prototype_settings.html */
+.card {
+  max-width: 720px;
+  margin: 12px auto 0;
+  padding: 28px 32px;
+  background: var(--surface);
+  border-radius: 12px;
+}
+
+.field {
+  margin-bottom: 18px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.input {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-1);
+  font: inherit;
+  font-size: 15px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--focus);
+}
+
+.input.invalid {
+  border-color: var(--danger);
+}
+
+.error {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.password {
+  position: relative;
+}
+
+.password .input {
+  padding-right: 64px;
+}
+
+.toggle {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  background: none;
+  border: 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.divider {
+  margin: 6px 0 22px;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.button {
+  padding: 11px 22px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--focus);
+  background: var(--surface-2);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.primary {
+  margin-left: auto;
+  padding: 11px 34px;
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--primary);
+}
+
+.result {
+  font-size: 14px;
+}
+
+/* 성공 색 — prototype_settings.html 의 --ok (디자인 토큰에 없어 이 모듈에서 정의) */
+.success {
+  color: #3ddc97;
+}
+
+.fail {
+  color: var(--danger);
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  padding: 12px 22px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 15px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.toast.visible {
+  opacity: 1;
+}
