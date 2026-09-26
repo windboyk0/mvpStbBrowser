@@ -49,6 +49,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **실제 값 금지.** 서버 주소 · IP · Api_Key · Auth_Val · stbId · 서비스관리번호 · 계정 등 실제 값은 spec · 코드 · 시안 어디에도 적지 않는다
 - **spec 버전:** 확인 필요 항목이 모두 해소되면 제목을 `v1.0 확정` 으로 갱신한다 ("추후" 로 미룬 항목은 확정을 막지 않음)
 
+## 모듈 설계 원칙 — 낮은 결합도 · 높은 응집도 (필수)
+
+화면(메뉴 key) 하나 = 독립 모듈. **화면별 spec · 구현은 서로 의존하지 않고 병렬로 동시에 진행할 수 있어야 한다.**
+
+- **높은 응집도:** 한 화면에 필요한 요구사항 · 설계 · Query · 컴포넌트 · main 로직 · IPC 는 **그 화면의 spec 폴더와 소스 폴더 안에 모두** 둔다. spec 은 다른 화면 spec 을 읽지 않아도 구현 가능해야 한다
+- **낮은 결합도:** 화면끼리 서로의 spec · 소스 · Query 를 **참조 · import 하지 않는다.** 같은 내용이 필요하면 **복사해서 각자 가진다** (중복 허용 — 독립성이 우선)
+- 화면 간 공유는 아래 **화면 모듈 계약** 으로만 한다 (계약 = 데이터 형식 · 이름 규칙. 코드 공유 아님)
+- 새 화면 spec 을 설계할 때도, 기존 spec 을 수정할 때도 이 원칙을 지킨다
+
+### 화면 모듈 계약
+
+**1) 폴더 소유권** — 화면 key `<key>` 의 구현 에이전트는 아래 폴더만 생성 · 수정한다
+
+| 소유 | 경로 |
+|---|---|
+| renderer 화면 | `src/renderer/src/screens/<key>/**` (진입 컴포넌트 `index.tsx` default export) |
+| main 로직 · IPC | `src/main/<key>/**` (진입 `ipc.ts` 에서 `register(ipcMain)` export) |
+| spec · history | `vibeContext/spec/NNN_<key>/**` |
+
+- 다른 화면 폴더 · 공통 파일(`App.tsx`, `menus.ts`, `preload/index.ts`, `main/index.ts`, `package.json`)은 **수정 금지**
+- 읽기 전용으로 사용 가능한 공통: `src/renderer/src/styles/*` (디자인 토큰), 전역 `TopBar`(App 이 렌더링 — 화면은 본문만 렌더링)
+
+**2) 연결 방식 (공통 파일 수정 없이 자동 연결 — `010_main` 에서 제공)**
+- renderer: `App.tsx` 가 `screens/<key>/index.tsx` 를 자동 탐색해 메뉴 key 로 연결. 폴더가 없으면 placeholder 화면
+- main: `main/index.ts` 가 `main/<key>/ipc.ts` 를 자동 탐색해 `register(ipcMain)` 호출
+- preload: `window.api.invoke(channel, payload)` 1개만 노출. **IPC 채널명은 `<key>:<action>`** (예: `singlePurchase:search`) — 채널 접두어는 메뉴 key 만 허용
+- renderer 화면 간 이동: `window` 이벤트 `app:navigate` (`detail: { key: '<menu key>' | 'main' }`) 로만 요청
+
+**3) 설정값 계약 (쓰기: `settings` 화면만 / 읽기: 필요한 화면이 각자)**
+- electron-store 파일명 `settings`, 키: `serverUrl`, `svcMgmtNo`, `dbConnectString`, `dbUser`, `dbPasswordEnc`
+- `dbPasswordEnc` = Electron `safeStorage.encryptString(비밀번호)` 결과의 base64 → 읽는 쪽은 `safeStorage.decryptString(Buffer.from(값,'base64'))`
+- 읽는 화면은 자기 `src/main/<key>/` 안에서 직접 읽고, Oracle 접속(oracledb Thin)도 자기 모듈에서 직접 한다
+- 필수 값이 하나라도 없으면 해당 화면이 팝업 `설정을 먼저 입력해 주세요.` (`[취소]` 메인 유지 / `[설정으로]` → `app:navigate` `settings`)
+
 ## Spec 구조 (항상 유지·최신화)
 
 화면 기준으로 폴더를 만든다. **이 구조와 규칙은 항상 유지하고, 구현·수정 시마다 spec과 history를 최신화한다.**
@@ -76,6 +110,8 @@ vibeContext/spec/
 - 화면당 1개. 요구사항 · 설계 · 작업 목록을 한 파일에 작성
 - 맨 위에 **구현 전 필독** (history 확인 지침) 과 **참고 파일** 표 (같은 폴더의 query / 정의서 / 디자인 파일 및 `vibeContext/Reference/` 경로를 파일명으로 지칭)
 - 여러 화면 공용 자료(`vibeContext/Reference/`)는 이동하지 않고 경로로 지칭
+- **필수 섹션 `모듈 경계`**: 소유 폴더 · 진입점 · IPC 채널 · 사용 계약 · 수정 금지 · 컴포넌트 위치 (CLAUDE.md › 모듈 설계 원칙)
+- 다른 화면 spec 을 "동일" · "참고" 로 참조하지 않는다 — 필요한 내용은 이 spec 에 직접 적는다
 
 ### 작업이력 (`history/`)
 - **구현 전 반드시 해당 화면의 `history/` 전체를 날짜순으로 확인한다**

@@ -6,6 +6,19 @@
 2. 아래 **참고 파일** 목록의 파일을 확인한다.
 3. 구현 완료 또는 수정 후에는 `../history/`에 이력을 작성한다. (규칙: 루트 `CLAUDE.md` › Spec 구조)
 4. **구현은 `1.1 1차 확정 범위` 만 진행한다.** `TBD` / `추후` / `확인 필요` 항목은 구현하지 않는다.
+5. **모듈 원칙 (낮은 결합도 · 높은 응집도):** 이 spec 만으로 구현한다. 다른 화면 spec · 소스를 참조하지 않으며, 다른 화면과 **병렬로 동시에** 구현된다. 공유는 루트 `CLAUDE.md` › 화면 모듈 계약(폴더 소유권 · 연결 방식 · 설정값 계약)으로만 한다
+
+## 모듈 경계
+
+| 구분 | 내용 |
+|---|---|
+| 소유 폴더 (생성 · 수정) | `src/renderer/src/screens/singlePurchase/**`, `src/main/singlePurchase/**`, `vibeContext/spec/020_singlePurchase/**` |
+| 진입점 | renderer `screens/singlePurchase/index.tsx` (default export), main `main/singlePurchase/ipc.ts` (`register(ipcMain)`) |
+| IPC 채널 | `singlePurchase:search` (목록 · 건수), `singlePurchase:purchase` (STB ID 조회 + IF-EPS-001), `singlePurchase:checkSettings` (필수 설정 존재 여부) |
+| 사용 (계약) | 설정값 **읽기** — CLAUDE.md › 설정값 계약 대로 store 를 이 모듈 안에서 직접 읽고 복호화. Oracle 접속(oracledb Thin) · IF-EPS-001 호출도 이 모듈 안에서 직접 |
+| 사용 (읽기 전용) | 디자인 토큰 `src/renderer/src/styles/*`, `window.api.invoke`, 화면 이동 `app:navigate` 이벤트 |
+| 수정 금지 | 다른 화면 폴더, 공통 파일(`App.tsx`, `menus.ts`, `preload/index.ts`, `main/index.ts`, `package.json`) |
+| 컴포넌트 | 이 화면에서 쓰는 컴포넌트(팝업 · 행 · 금액 패널 · 구매완료 등)는 모두 `screens/singlePurchase/` 안에 둔다 (다른 화면과 공유 · import 금지) |
 
 ## 참고 파일
 
@@ -71,6 +84,10 @@
 ---
 
 ## 3. 요구사항
+
+### R0. 진입 조건
+- R0.1 진입 시 `singlePurchase:checkSettings` 로 필수 설정(`serverUrl`, `svcMgmtNo`, `dbConnectString`, `dbUser`, `dbPasswordEnc`) 확인
+- R0.2 하나라도 없으면 팝업 `설정을 먼저 입력해 주세요.` — `[취소]` → 메인 (`app:navigate` `main`), `[설정으로]` → `app:navigate` `settings`
 
 ### R1. [A] 상품 조회
 - R1.1 구매가능한 단건 상품을 Oracle에서 조회하여 목록으로 보여주고, 행을 선택해 구매를 진행한다 (`query_productList.sql`)
@@ -348,15 +365,17 @@
 | `AmountSummary` | 결제 금액 패널 |
 | `PurchaseActionBar` | 하단 선택 내역 + 버튼 |
 
-소스 위치(예정): `src/renderer/src/screens/singlePurchase/`, 연동: `src/main/` (IPC)
+소스 위치: `src/renderer/src/screens/singlePurchase/` (화면 · 컴포넌트 전부), `src/main/singlePurchase/` (설정 읽기 · oracledb · IF-EPS-001 · IPC 전부)
+- Query 파일은 빌드 산출물에서 읽을 수 있도록 main 모듈에 포함 (예: `?raw` import 로 문자열 번들)
 
 ---
 
 ## 5. 작업 목록
 
-> 1차 확정 범위(1.1) 기준. 설정 화면(DB 접속 정보, STG 서버 주소, 서비스관리번호)은 `settings` spec 에서 정의 — 선행 필요
+> 1차 확정 범위(1.1) 기준. 선행: `010_main` T10 ~ T13 (자동 연결 · 의존성) 만. 설정 · 월정액 화면과 **의존 없음 — 병렬 구현** (설정값은 계약 형식으로 읽기만 하므로, 테스트 시 store 에 계약 형식으로 값이 있으면 됨)
 
-- [ ] T1. 메인 › 단건구매 진입 연결 (placeholder 대체)
+- [ ] T1. 진입점 `screens/singlePurchase/index.tsx` + `main/singlePurchase/ipc.ts` 생성 (자동 연결), 진입 조건 팝업 — R0
+- [ ] T1a. main 설정값 읽기 · 복호화 + oracledb 접속 헬퍼 (이 모듈 안에 작성) — 모듈 경계
 - [ ] T2. [A] 상품 조회 화면 (검색조건 2개, 목록 6컬럼, 페이지 10건, 최초 미조회 안내) — R1
 - [ ] T3. [A] Oracle 조회 (main, `query_productList.sql`, 바인드 변수, 건수 Query) — R1.2 ~ R1.6, R1.9
 - [ ] T4. [A] 구매 확인 팝업 — R1.8

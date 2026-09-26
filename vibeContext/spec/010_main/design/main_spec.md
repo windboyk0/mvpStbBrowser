@@ -5,6 +5,8 @@
 1. **`../history/` 폴더의 모든 파일을 날짜순으로 먼저 확인한다.** (개발완료 / 수정이력 — 이미 구현·변경된 내용과 사유)
 2. 아래 **참고 파일** 목록의 파일을 확인한다.
 3. 구현 완료 또는 수정 후에는 `../history/`에 이력을 작성한다. (규칙: 루트 `CLAUDE.md` › Spec 구조)
+4. **모듈 원칙:** 이 화면은 루트 `CLAUDE.md` › 모듈 설계 원칙 · 화면 모듈 계약을 따른다. 메인은 **공통 파일(`App.tsx`, `menus.ts`, `preload/index.ts`, `main/index.ts`, `package.json`)의 소유자**이며, 다른 화면이 공통 파일을 수정하지 않도록 **자동 연결 구조(3. 설계 › 화면 모듈 연결)** 를 제공한다
+5. **T10 ~ T13 은 다른 화면 구현보다 먼저 완료한다** (짧은 선행 작업 — 완료 후 다른 화면은 모두 병렬 구현 가능)
 
 ## 참고 파일
 
@@ -161,6 +163,22 @@
 ### 라우팅
 - 카드 클릭 → `key` 기준 화면 이동. 대상 화면 미구현 시 빈 placeholder 화면(제목 + `←`)으로 이동
 
+### 화면 모듈 연결 (공통 파일 수정 없이 화면 추가)
+
+CLAUDE.md › 화면 모듈 계약 의 구현. 각 화면은 자기 폴더에 파일만 추가하면 자동 연결된다.
+
+| 구분 | 방식 | 규칙 |
+|---|---|---|
+| renderer 화면 | `App.tsx` 에서 `import.meta.glob('./screens/*/index.tsx')` 로 탐색 | 폴더명이 `MENUS` 의 key 와 같을 때만 연결. 없으면 placeholder. `React.lazy` 로 로드 |
+| main IPC | `main/index.ts` 에서 `import.meta.glob('./*/ipc.ts', { eager: true })` 로 탐색 | 각 모듈의 `register(ipcMain)` 호출 (앱 시작 시 1회) |
+| preload | `window.api.invoke(channel, payload)` 1개만 노출 (`ipcRenderer.invoke`) | `channel` 은 `<key>:<action>` 형식, 접두어가 `MENUS` key 가 아니면 거부 |
+| 화면 이동 | `window.dispatchEvent(new CustomEvent('app:navigate', { detail: { key } }))` | `key` = 메뉴 key 또는 `'main'`. `App.tsx` 가 수신해 route 변경 |
+| 공통 의존성 | `package.json` 에 `oracledb`, `electron-store` 미리 추가 | 다른 화면이 `package.json` 을 수정하지 않도록 |
+
+- 화면 컴포넌트는 **본문만** 렌더링 (상단 `TopBar` 는 App 이 계속 렌더링). 화면 제목 = 메뉴 label
+- 기존 `screens/main/`, `screens/placeholder/` 는 메인 소유 (메뉴 key 가 아니므로 자동 탐색 대상 아님)
+- `preload/index.d.ts` 의 `window.api` 타입: `invoke<T = unknown>(channel: string, payload?: unknown): Promise<T>`
+
 ---
 
 ## 4. 작업 목록
@@ -174,3 +192,9 @@
 - [x] T7. 카드 클릭 라우팅 + 미구현 화면 placeholder(제목 + `←` 복귀) — R4
 - [x] T8. 확인: 최소 창 폭 1280px에서 `prototype_main.html` 과 동일하게 표시
 - [x] T9. 카드 부가정보·알림점 제거 (`>` 만 표시) — R1.5, R2.1
+
+### 선행 작업 — 화면 모듈 연결 (다른 화면보다 먼저)
+- [ ] T10. renderer 자동 연결: `App.tsx` glob 탐색 + `React.lazy`, 없으면 placeholder, `app:navigate` 이벤트 수신 — 3. 설계 › 화면 모듈 연결
+- [ ] T11. main 자동 연결: `main/index.ts` 에서 `./*/ipc.ts` glob → `register(ipcMain)`
+- [ ] T12. preload `window.api.invoke(channel, payload)` + 채널 접두어(메뉴 key) 검사, `index.d.ts` 타입
+- [ ] T13. `package.json` 에 `oracledb`, `electron-store` 추가 (`npm install`), 빌드 · 타입검사 통과 확인

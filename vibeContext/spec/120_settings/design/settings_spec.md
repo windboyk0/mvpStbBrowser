@@ -6,13 +6,25 @@
 2. 아래 **참고 파일** 목록의 파일을 확인한다.
 3. 구현 완료 또는 수정 후에는 `../history/`에 이력을 작성한다. (규칙: 루트 `CLAUDE.md` › Spec 구조)
 4. **실제 서버 주소 · 계정 · 비밀번호를 코드 · 문서 · 테스트에 기재하지 않는다.** (CLAUDE.md › Architecture)
+5. **모듈 원칙 (낮은 결합도 · 높은 응집도):** 이 spec 만으로 구현한다. 다른 화면 spec · 소스를 참조하지 않으며, 다른 화면과 **병렬로 동시에** 구현된다. 공유는 루트 `CLAUDE.md` › 화면 모듈 계약(폴더 소유권 · 연결 방식 · 설정값 계약)으로만 한다
+
+## 모듈 경계
+
+| 구분 | 내용 |
+|---|---|
+| 소유 폴더 (생성 · 수정) | `src/renderer/src/screens/settings/**`, `src/main/settings/**`, `vibeContext/spec/120_settings/**` |
+| 진입점 | renderer `screens/settings/index.tsx` (default export), main `main/settings/ipc.ts` (`register(ipcMain)`) |
+| IPC 채널 | `settings:get`, `settings:save`, `settings:testConnection` |
+| 제공 (계약) | 설정값 **쓰기** — CLAUDE.md › 설정값 계약 의 store 파일명 · 키 · 암호화 형식을 정확히 지킨다 (다른 화면이 이 형식으로 직접 읽음) |
+| 사용 (읽기 전용) | 디자인 토큰 `src/renderer/src/styles/*`, `window.api.invoke` |
+| 수정 금지 | 다른 화면 폴더, 공통 파일(`App.tsx`, `menus.ts`, `preload/index.ts`, `main/index.ts`, `package.json` — 의존성 `electron-store` · `oracledb` 는 `010_main` 에서 추가) |
 
 ## 참고 파일
 
 | 구분 | 파일 | 용도 |
 |---|---|---|
 | 디자인 시안 | `prototype_settings.html` | 설정 화면 시안 |
-| Query | `vibeContext/spec/020_singlePurchase/design/query_stbId.sql` | 연결 테스트 시 서비스관리번호 → STB ID 조회 |
+| Query | `query_stbId.sql` | 연결 테스트 시 서비스관리번호 → STB ID 조회 (이 모듈 소유 사본) |
 | 기술 기준 | 루트 `CLAUDE.md` › Tech (electron-store, safeStorage, oracledb Thin) | 저장 · 암호화 · DB 접속 |
 | 디자인 토큰 | 루트 `CLAUDE.md` › Design Tone | |
 
@@ -44,7 +56,7 @@ STB ID, 주민법인일련번호는 입력받지 않고 서비스관리번호로
 
 ### R2. 저장
 - R2.1 `[저장]` → 검증 통과 시 로컬 저장 후 토스트 `저장되었습니다.`
-- R2.2 저장 위치: electron-store (`%APPDATA%\<앱이름>\`), **비밀번호는 `safeStorage` 로 암호화하여 저장**
+- R2.2 저장: CLAUDE.md › 설정값 계약 그대로 — electron-store 파일명 `settings`, 키 `serverUrl` · `svcMgmtNo` · `dbConnectString` · `dbUser` · `dbPasswordEnc`. 비밀번호는 `safeStorage.encryptString()` 결과를 **base64** 로 `dbPasswordEnc` 에 저장 (원문 저장 금지)
 - R2.3 화면 진입 시 저장된 값을 채워서 표시. 비밀번호는 저장되어 있으면 `••••••••` 로 표시하고, 수정하지 않으면 기존 값 유지
 - R2.4 저장된 값이 없으면 빈 입력칸
 
@@ -61,9 +73,8 @@ STB ID, 주민법인일련번호는 입력받지 않고 서비스관리번호로
 - R3.3 테스트 중에는 버튼 비활성 + `연결 확인 중…`
 - R3.4 연결 테스트는 저장하지 않는다
 
-### R4. 설정 미입력 시 다른 화면 동작
-- R4.1 메인 › 단건구매 / 월정액구매 진입 시 필수 설정이 하나라도 없으면 팝업 `설정을 먼저 입력해 주세요.` — `[취소]` (메인 유지) / `[설정으로]` (설정 화면 이동)
-- R4.2 조회 · 구매 중 DB 접속 오류는 각 화면에서 에러 메시지로 표시 (각 화면 spec)
+### R4. 다른 화면과의 관계
+- 설정 미입력 시 안내 팝업 · DB 오류 표시는 **각 화면이 자기 spec 에서 처리**한다 (이 모듈은 저장 형식만 보장)
 
 ---
 
@@ -105,23 +116,22 @@ STB ID, 주민법인일련번호는 입력받지 않고 서비스관리번호로
 | `settings:save` | `{ serverUrl, svcMgmtNo, dbConnectString, dbUser, dbPassword? }` | `{ ok }` — `dbPassword` 미전달 시 기존 값 유지 |
 | `settings:testConnection` | 저장과 같은 형태 (비밀번호 미전달 시 저장된 값 사용) | `{ ok, stbId?, message? }` |
 
-- main 공통 모듈 `getSettings()` 로 다른 화면(조회 · 구매)이 설정값 사용
-- DB 접속 풀은 설정 저장 시 재생성
+- 다른 화면은 이 모듈을 import 하지 않고, 설정값 계약에 따라 store 를 **직접** 읽는다
+- 연결 테스트용 DB 접속은 이 모듈 안에서 매번 새로 열고 닫는다 (다른 화면과 접속 풀 공유 없음)
 
 ### 소스 위치(예정)
 - renderer: `src/renderer/src/screens/settings/`
-- main: `src/main/settings/` (store · 암호화 · IPC), `src/main/db/` (oracledb 접속 · 쿼리 실행)
+- main: `src/main/settings/` (store · 암호화 · oracledb 연결 테스트 · IPC — 모두 이 폴더 안)
 
 ---
 
 ## 4. 작업 목록
 
-- [ ] T1. 의존성 추가: `electron-store`, `oracledb` (Thin 모드)
-- [ ] T2. main 설정 저장소 (electron-store + safeStorage 비밀번호 암호화, `getSettings()`) — R2
-- [ ] T3. main DB 모듈 (oracledb Thin 접속, 바인드 쿼리 실행 공통 함수) — R3
-- [ ] T4. IPC `settings:get` / `settings:save` / `settings:testConnection` + preload 노출 — 3. 설계 › IPC
-- [ ] T5. 설정 화면 (입력 5칸, 검증, 비밀번호 마스킹 · 보기 토글, 저장 토스트) — R1, R2
-- [ ] T6. 연결 테스트 (STB ID 조회 결과 표시) — R3
-- [ ] T7. 메인 › 설정 진입 연결 (placeholder 대체)
-- [ ] T8. 단건 · 월정액 진입 시 설정 미입력 팝업 — R4.1
-- [ ] T9. 단위 테스트: 입력 검증 규칙 — R1.2
+> 선행: `010_main` T10 ~ T13 (자동 연결 · 의존성). 그 외 다른 화면과 **의존 없음 — 병렬 구현**
+
+- [ ] T1. main 설정 저장소 (electron-store `settings`, 계약 키, `dbPasswordEnc` = safeStorage + base64) — R2
+- [ ] T2. main 연결 테스트 (oracledb Thin 접속 → `query_stbId.sql` 실행 → 접속 종료) — R3
+- [ ] T3. `main/settings/ipc.ts` — `register(ipcMain)` 로 `settings:get` / `settings:save` / `settings:testConnection` 등록 — 3. 설계 › IPC
+- [ ] T4. 화면 `screens/settings/index.tsx` (입력 5칸, 검증, 비밀번호 마스킹 · 보기 토글, 저장 토스트) — R1, R2
+- [ ] T5. 연결 테스트 결과 표시 — R3
+- [ ] T6. 단위 테스트: 입력 검증 규칙 — R1.2
