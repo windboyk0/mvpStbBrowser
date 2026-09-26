@@ -194,7 +194,7 @@ CLAUDE.md › 화면 모듈 계약 의 구현. 각 화면은 자기 폴더에 �
 - [x] T9. 카드 부가정보·알림점 제거 (`>` 만 표시) — R1.5, R2.1
 
 ### 선행 작업 — 화면 모듈 연결 (다른 화면보다 먼저)
-- [ ] T10. renderer 자동 연결: `App.tsx` glob 탐색 + `React.lazy`, 없으면 placeholder, `app:navigate` 이벤트 수신 — 3. 설계 › 화면 모듈 연결
-- [ ] T11. main 자동 연결: `main/index.ts` 에서 `./*/ipc.ts` glob → `register(ipcMain)`
-- [ ] T12. preload `window.api.invoke(channel, payload)` + 채널 접두어(메뉴 key) 검사, `index.d.ts` 타입
-- [ ] T13. `package.json` 에 `oracledb`, `electron-store` 추가 (`npm install`), 빌드 · 타입검사 통과 확인
+- [x] T10. renderer 자동 연결: `App.tsx` glob 탐색 + `React.lazy`, 없으면 placeholder, `app:navigate` 이벤트 수신 — 3. 설계 › 화면 모듈 연결
+- [x] T11. main 자동 연결: `main/index.ts` 에서 `./*/ipc.ts` glob → `register(ipcMain)`
+- [x] T12. preload `window.api.invoke(channel, payload)` + 채널 접두어(메뉴 key) 검사, `index.d.ts` 타입
+- [x] T13. `package.json` 에 `oracledb`, `electron-store` 추가 (`npm install`), 빌드 · 타입검사 통과 확인

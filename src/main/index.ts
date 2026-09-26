@@ -1,6 +1,28 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+
+// 화면 모듈 main IPC 자동 등록 — 각 화면의 `src/main/<key>/ipc.ts` 가 `register(ipcMain)` export
+// (main_spec 3. 설계 › 화면 모듈 연결)
+interface ScreenIpcModule {
+  register?: (ipc: typeof ipcMain) => void
+}
+
+const screenIpcModules = import.meta.glob<ScreenIpcModule>('./*/ipc.ts', { eager: true })
+
+function registerScreenIpc(): void {
+  for (const [path, mod] of Object.entries(screenIpcModules)) {
+    if (typeof mod.register !== 'function') {
+      console.error(`[ipc] register 함수 없음: ${path}`)
+      continue
+    }
+    try {
+      mod.register(ipcMain)
+    } catch (err) {
+      console.error(`[ipc] 등록 실패: ${path}`, err)
+    }
+  }
+}
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -41,6 +63,7 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  registerScreenIpc()
   createWindow()
 
   app.on('activate', () => {

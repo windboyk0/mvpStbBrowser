@@ -39,3 +39,22 @@
 - 관련 spec: 3. 설계 › 메뉴 정의 데이터
 - 검증: typecheck / lint / test(4건) / prettier 통과
 - 비고: 이후 `Reference/`, `spec/` 화면 폴더는 이 key로 생성 (예: `030_monthlyPurchase`)
+
+## 17:10 화면 모듈 연결 선행 작업 구현
+- 작업: T10, T11, T12, T13 (2026-09-26 spec 모듈화 — 다른 화면 병렬 구현 전 선행)
+- 변경 파일:
+  - `src/renderer/src/App.tsx` — `import.meta.glob('./screens/*/index.tsx')` 탐색, 폴더명이 `MENUS` key 일 때만 `React.lazy` 로 연결(없으면 placeholder), `Suspense`, `app:navigate` 이벤트 수신(`main` / 메뉴 key, 그 외 무시)
+  - `src/main/index.ts` — `import.meta.glob('./*/ipc.ts', { eager: true })` → 앱 시작 시 `register(ipcMain)` 1회 호출 (register 없음/예외는 콘솔 로그 후 다음 모듈 진행)
+  - `src/main/env.d.ts` (신규) — main 에서 `import.meta.glob` 타입 사용을 위한 `vite/client` 참조
+  - `src/preload/index.ts`, `src/preload/index.d.ts` — `window.api.invoke<T>(channel, payload?)` 1개 노출. 채널이 `<key>:<action>` 형식이고 key 가 `MENUS` 에 있을 때만 `ipcRenderer.invoke`, 아니면 reject
+  - `tsconfig.node.json` — preload 가 `screens/main/menus.ts` 를 import 하므로 include 에 추가 (메뉴 key 단일 원본 유지)
+  - `package.json`, `package-lock.json` — dependencies 에 `oracledb` ^7.0.1, `electron-store` ^11.0.2 추가
+  - `electron.vite.config.ts` — `electron-store` 는 ESM 전용이라 main 번들에 포함 (`externalizeDepsPlugin({ exclude: ['electron-store'] })`), `oracledb` 는 external
+- 내용: 화면 모듈은 `screens/<key>/index.tsx`, `main/<key>/ipc.ts` 만 추가하면 공통 파일 수정 없이 연결됨. 메인 화면 동작 변화 없음
+- 관련 spec: 3. 설계 › 화면 모듈 연결, CLAUDE.md › 화면 모듈 계약
+- 검증:
+  - `npm run build` (typecheck + electron-vite build), `npm run lint`, `npm test`(4건) 통과, `npm audit` 0건
+  - 임시 모듈(`main/coupon/ipc.ts` — electron-store·oracledb import, `screens/coupon`, `screens/zzz`)로 빌드·실행 확인: main 에서 register 호출 및 oracledb Thin 로드 확인, `coupon` 화면 번들 포함. 확인 후 임시 모듈 삭제
+- 비고:
+  - 메뉴 key 가 아닌 `screens/*/index.tsx` 폴더도 glob 특성상 별도 chunk 로 빌드되지만 연결되지 않음
+  - main 쪽은 채널 접두어를 검사하지 않음 (계약상 각 화면이 `<key>:` 채널만 등록 — preload 에서 차단)

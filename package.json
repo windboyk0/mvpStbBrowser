@@ -17,7 +17,9 @@
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
-    "@electron-toolkit/utils": "^4.0.0"
+    "@electron-toolkit/utils": "^4.0.0",
+    "electron-store": "^11.0.2",
+    "oracledb": "^7.0.1"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^2.0.0",
