@@ -1,0 +1,19 @@
+appId: com.mvpstbbrowser.app
+productName: MY B tv 구매 테스트
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - package.json
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  artifactName: ${name}-setup-${version}.${ext}
+# 코드 서명 · 자동 업데이트(publish: github) 설정은 인증서/저장소 확정 후 추가

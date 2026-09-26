@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>월정액구매 시안</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--bg:#0E0B20;--surface:#1B1830;--surface2:#25223D;--border:#3A3754;--primary:#3D2BD9;--focus:#6E74FF;--t1:#fff;--t2:#B5B3C9;--t3:#77758C;--badge:#2A2840}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t1);font-family:Pretendard,"Malgun Gothic",sans-serif;min-width:1280px}
+button{font:inherit;color:inherit;cursor:pointer}
+.top{height:56px;display:flex;align-items:center;gap:12px;padding:0 28px;border-bottom:1px solid #1F1C36}
+.top h1{font-size:18px;font-weight:600;margin:0}
+.back{background:none;border:0;font-size:22px;color:var(--t2);padding:4px}
+main{padding:24px 40px 170px;max-width:1600px;margin:0 auto}
+.steps{display:flex;gap:6px}
+.steps span{padding:8px 16px;border-radius:999px;font-size:15px;color:var(--t2)}
+.steps span.on{background:var(--surface2);color:#fff}
+.hd{text-align:center;margin:-10px 0 28px}
+.hd h2{font-size:38px;margin:0 0 8px;font-weight:600}
+.hd p{font-size:21px;margin:0;color:#ddd}
+.cols{display:grid;gap:36px}
+.col h3{font-size:20px;margin:0 0 12px;display:flex;gap:12px;align-items:baseline;font-weight:600}
+.col h3 small{font-size:14px;color:var(--t2);font-weight:400}
+.row{display:flex;align-items:center;gap:14px;padding:15px 18px;border:2px solid transparent;border-top-color:#25223a;border-bottom-color:#25223a;margin-top:-2px;cursor:pointer}
+.row:hover{border-color:var(--focus);border-radius:8px}
+.row.sel .name{color:var(--focus)}
+.empty{color:var(--t3);font-size:15px;font-weight:400}
+.row.dis{cursor:default;opacity:.55}.row.dis:hover{border-color:transparent;border-top-color:#25223a;border-bottom-color:#25223a}
+.name{font-size:20px;font-weight:600}
+.desc{font-size:15px;color:var(--t2)}
+.amt{margin-left:auto;text-align:right;font-size:20px;font-weight:600}
+.bdg{display:inline-block;background:var(--badge);color:#D9D7EA;font-size:13px;padding:4px 10px;border-radius:6px;margin-bottom:4px;font-weight:400}
+.radio{width:24px;height:24px;border-radius:50%;border:2px solid var(--t3);flex:none;display:grid;place-items:center}
+.sel .radio{border-color:#fff}.sel .radio::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--focus)}
+.chk{width:24px;height:24px;border:2px solid var(--t3);border-radius:3px;flex:none;display:grid;place-items:center;font-size:15px}
+.on .chk{background:var(--focus);border-color:var(--focus)}
+.tip{background:var(--primary);font-size:13px;padding:6px 12px;border-radius:8px;white-space:nowrap}
+.sbtn{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:8px 16px;font-size:14px}
+.sum{background:var(--surface);border-radius:12px;padding:20px 22px;min-height:430px;display:flex;flex-direction:column}
+.sum .l{display:flex;justify-content:space-between;padding:12px 0;font-size:15px;color:var(--t2)}
+.sum .l b{font-size:22px;color:#fff;font-weight:600}
+.sum .l.tot b{font-size:26px;border-bottom:3px solid var(--primary)}
+.sum .opt{margin-top:auto;font-size:14px;color:var(--t2);display:flex;gap:10px;align-items:center}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#120f26;border-top:1px solid #1F1C36;padding:18px 40px;display:flex;align-items:flex-end;gap:16px}
+.bar .info{flex:1}
+.bar .k{font-size:15px;font-weight:600}
+.bar .v{font-size:22px;font-weight:600;margin:4px 0}
+.bar .v span{color:var(--t3);margin:0 8px;font-weight:400}
+.bar .n{font-size:13px;color:var(--t3)}
+.btn{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:14px 32px;font-size:20px;font-weight:600;min-width:130px}
+.btn:hover{border-color:var(--focus)}
+.btn.p{background:var(--primary);border-color:var(--primary)}
+.btn.p:hover{border-color:var(--focus)}
+.search{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.search label{color:var(--t2);font-size:15px}
+.search select,.search input{background:var(--surface2);border:1px solid var(--border);color:#fff;border-radius:8px;padding:10px 12px;font:inherit;font-size:15px}
+.search select:focus,.search input:focus{outline:none;border-color:var(--focus)}
+.search input{flex:1}
+.sbtn.p{background:var(--primary);border-color:var(--primary);padding:10px 26px;font-size:15px;font-weight:600}
+.cnt{color:var(--t2);font-size:14px;margin:0 0 8px}
+table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:10px;overflow:hidden}
+th{text-align:left;font-size:13px;color:var(--t2);font-weight:500;padding:12px 16px;background:#211e38}
+td{height:44px;padding:0 16px;border-top:1px solid #2a2743;font-size:15px}
+tbody tr.click{cursor:pointer}tbody tr.click:hover td{background:var(--surface2)}
+.r{text-align:right}
+.pg{display:flex;justify-content:center;gap:6px;margin-top:14px}
+.pg button{min-width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:14px}
+.pg button.on{background:var(--primary);border-color:var(--primary)}
+.pg button:disabled{opacity:.35;cursor:default}
+.modal-bg{position:fixed;inset:0;background:rgba(5,4,15,.7);display:grid;place-items:center;z-index:9}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 32px 24px;width:480px}
+.modal p{font-size:19px;margin:8px 0 28px;line-height:1.5}
+.modal .acts{display:flex;justify-content:flex-end;gap:10px}
+.modal .btn{padding:10px 24px;font-size:16px;min-width:0}
+.done{text-align:center;padding-top:110px}
+.done .ic{font-size:64px;line-height:1}
+.done .ic.ok{color:#3DDC97}.done .ic.ng{color:#FF4D5E}
+.done p{font-size:24px;margin:22px 0 40px;white-space:pre-line}
+.done .acts{display:flex;justify-content:center;gap:12px}
+.demo{margin-top:40px;font-size:13px;color:var(--t3)}
+.tbd{border:2px dashed var(--border);border-radius:12px;padding:60px;text-align:center;color:var(--t3);font-size:16px;line-height:1.8}
+.tbd b{color:var(--t2)}
+td.sm,th.sm{font-size:13px}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="back" id="back" aria-label="뒤로">←</button>
+  <h1>월정액구매</h1>
+</header>
+<main id="app"></main>
+<div id="bar"></div>
+<div id="modal"></div>
+
+<script>
+// Mock — [A] 조회 결과 (query_productList.sql 컬럼)
+const GB=['VOD','VOD','CMP','IPTV','YTP','DNP','VAS','VOD'];
+const ROWS=Array.from({length:27},(_,i)=>({gb:GB[i%GB.length],id:String(i%GB.length===3?'PP2100'+(4000+i):2194000+i*13),nm:`샘플 월정액 ${String(i+1).padStart(2,'0')}`,pkg:'',par:'',tp:'',prc:[9900,5500,3300,11000,7700][i%5],free:i%4===0?'01':'',agmt:i%9===0?'Y':'N'}))
+  .sort((a,b)=>a.nm.localeCompare(b.nm)||a.id.localeCompare(b.id));
+const PAYS=['청구서','신용카드','휴대폰','카카오페이','네이버페이','PAYCO','SK pay'];
+const PAGE=10;
+const S={route:'A',typ:'',nm:'',page:1,sel:null,fail:false};
+const TYPES=['VOD','CMP','YTP','DNP','VAS','IPTV'];
+const $=id=>document.getElementById(id);
+const won=n=>n.toLocaleString('ko-KR')+'원';
+function go(r){S.route=r;render();scrollTo(0,0)}
+function search(){S.typ=$('ftyp').value;S.nm=$('fnm').value.trim();S.page=1;render()}
+// 실제 구현: 상품유형별 Query 파일 선택 실행 (시안은 필터로 흉내)
+function filtered(){return ROWS.filter(r=>(!S.typ||r.gb===S.typ)&&(!S.nm||r.nm.toUpperCase().includes(S.nm.toUpperCase())))}
+function pick(id){const r=ROWS.find(x=>x.id===id);
+  $('modal').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal"><p>[${r.nm}] 을 구매하겠습니까?</p><div class="acts"><button class="btn" onclick="closeModal()">취소</button><button class="btn p" onclick="confirmPick('${id}')">확인</button></div></div></div>`}
+function closeModal(){$('modal').innerHTML=''}
+// 무약정: 조회 없이 생성 (가격 = 목록 가격) / 약정기간: query_agreementList.sql 결과 (여기서는 Mock) — 약정필수 Y 이면 무약정 없음
+function agmts(r){const a=[{id:null,n:'무약정',p:r.prc},{id:'PA-12',n:'12개월',p:Math.round(r.prc*0.9/10)*10},{id:'PA-24',n:'24개월',p:Math.round(r.prc*0.8/10)*10}];return r.agmt==='Y'?a.slice(1):a}
+function confirmPick(id){closeModal();S.sel=ROWS.find(x=>x.id===id);S.ag=0;go('C')}
+function backToSearch(){go('A')}
+addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+const V={
+A(){const list=filtered(),pages=Math.max(1,Math.ceil(list.length/PAGE)),rows=list.slice((S.page-1)*PAGE,S.page*PAGE);
+  const opt=[['','전체'],...TYPES.map(t=>[t,t])].map(([v,t])=>`<option value="${v}" ${S.typ===v?'selected':''}>${t}</option>`).join('');
+  return[`<div class="search"><label>상품유형</label><select id="ftyp">${opt}</select><label>상품명</label><input id="fnm" value="${S.nm}" placeholder="상품명 입력 (비우면 전체)" onkeydown="if(event.key==='Enter')search()"><button class="sbtn p" onclick="search()">검색</button></div>
+  <p class="cnt">총 ${list.length}건</p>
+  <table><thead><tr><th class="sm" style="width:70px">구분</th><th class="sm" style="width:120px">상품ID</th><th class="sm">상품명</th><th class="sm" style="width:90px">패키지ID</th><th class="sm" style="width:100px">상위상품ID</th><th class="sm" style="width:80px">PPM유형</th><th class="sm r" style="width:110px">가격</th><th class="sm" style="width:100px">무료가입기간</th><th class="sm" style="width:80px">약정필수</th></tr></thead>
+  <tbody>${rows.length?rows.map(r=>`<tr class="click" onclick="pick('${r.id}')"><td class="sm">${r.gb}</td><td class="sm">${r.id}</td><td>${r.nm}</td><td class="sm">${r.pkg}</td><td class="sm">${r.par}</td><td class="sm">${r.tp}</td><td class="r">${won(r.prc)}</td><td class="sm">${r.free}</td><td class="sm">${r.agmt}</td></tr>`).join(''):`<tr><td colspan="9" style="text-align:center;color:var(--t3);height:120px">조회된 상품이 없습니다</td></tr>`}</tbody></table>
+  <div class="pg"><button ${S.page===1?'disabled':''} onclick="S.page--;render()">‹</button>${Array.from({length:pages},(_,i)=>`<button class="${S.page===i+1?'on':''}" onclick="S.page=${i+1};render()">${i+1}</button>`).join('')}<button ${S.page===pages?'disabled':''} onclick="S.page++;render()">›</button></div>`,'']},
+C(){const r=S.sel,AG=agmts(r),ag=AG[S.ag];
+  return[`<div class="hd" style="margin-top:10px"><h2>${r.nm}</h2><p>결제 및 할인 수단을 선택해 주세요.</p></div>
+  <div class="cols" style="grid-template-columns:230px 200px 1fr 320px;gap:24px">
+   <div class="col"><h3>약정 선택</h3>${AG.map((a,i)=>`<div class="row ${S.ag===i?'sel':''}" onclick="S.ag=${i};render()"><span class="radio"></span><div class="name" style="font-weight:500">${a.n}</div><div class="amt" style="font-size:17px">${won(a.p)}</div></div>`).join('')}</div>
+   <div class="col"><h3>결제 수단</h3><div>${PAYS.map((p,i)=>`<div class="row ${i===0?'sel':'dis'}"><span class="radio"></span><div class="name" style="font-weight:500">${p}</div></div>`).join('')}</div></div>
+   <div class="col"><h3>할인 수단</h3>${['쿠폰','T멤버십'].map(n=>`<div class="row dis"><span class="chk">✕</span><div class="name" style="width:120px">${n}</div><div class="desc"></div><div class="amt">0원</div></div>`).join('')}</div>
+   <div class="col"><h3>결제 금액</h3><div class="sum"><div class="l">상품 금액<b>${won(ag.p)}</b></div><div class="l">할인 금액<b>0원</b></div><div class="l">부가세<b>포함</b></div><div class="l tot">구매 금액<b>${won(ag.p)}</b></div></div></div>
+  </div>`,`<div class="bar"><div class="info"><div class="k">상품 선택 내역</div><div class="v">${r.nm}<span>|</span>${ag.n}</div></div><button class="btn" onclick="backToSearch()">구매취소</button><button class="btn p" onclick="go('D')">${won(ag.p)} 결제</button></div>`]},
+D(){const ok=!S.fail;
+  return[`<div class="done"><div class="ic ${ok?'ok':'ng'}">${ok?'✔':'✖'}</div><p>${ok?'구매가 완료되었습니다.':'이미 구매한 상품입니다.'}</p>
+  <div class="acts"><button class="btn" onclick="location.reload()">홈으로</button><button class="btn p" onclick="backToSearch()">구매 계속하기</button></div>
+  <div class="demo">시안 전용 · <a href="#" style="color:var(--t2)" onclick="S.fail=!S.fail;render();return false">성공/에러 화면 전환</a></div></div>`,'']}
+};
+function render(){const [b,br]=V[S.route]();$('app').innerHTML=b;$('bar').innerHTML=br;$('app').style.paddingBottom=br?'170px':'24px'}
+$('back').onclick=()=>go('A');
+render(); // 진입 시 자동 조회
+</script>
+</body>
+</html>

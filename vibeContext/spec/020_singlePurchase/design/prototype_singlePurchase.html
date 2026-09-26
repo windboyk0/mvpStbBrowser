@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>단건구매 시안</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--bg:#0E0B20;--surface:#1B1830;--surface2:#25223D;--border:#3A3754;--primary:#3D2BD9;--focus:#6E74FF;--t1:#fff;--t2:#B5B3C9;--t3:#77758C;--badge:#2A2840}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t1);font-family:Pretendard,"Malgun Gothic",sans-serif;min-width:1280px}
+button{font:inherit;color:inherit;cursor:pointer}
+.top{height:56px;display:flex;align-items:center;gap:12px;padding:0 28px;border-bottom:1px solid #1F1C36}
+.top h1{font-size:18px;font-weight:600;margin:0}
+.back{background:none;border:0;font-size:22px;color:var(--t2);padding:4px}
+main{padding:24px 40px 170px;max-width:1600px;margin:0 auto}
+.steps{display:flex;gap:6px}
+.steps span{padding:8px 16px;border-radius:999px;font-size:15px;color:var(--t2)}
+.steps span.on{background:var(--surface2);color:#fff}
+.hd{text-align:center;margin:-10px 0 28px}
+.hd h2{font-size:38px;margin:0 0 8px;font-weight:600}
+.hd p{font-size:21px;margin:0;color:#ddd}
+.cols{display:grid;gap:36px}
+.col h3{font-size:20px;margin:0 0 12px;display:flex;gap:12px;align-items:baseline;font-weight:600}
+.col h3 small{font-size:14px;color:var(--t2);font-weight:400}
+.row{display:flex;align-items:center;gap:14px;padding:15px 18px;border:2px solid transparent;border-top-color:#25223a;border-bottom-color:#25223a;margin-top:-2px;cursor:pointer}
+.row:hover{border-color:var(--focus);border-radius:8px}
+.row.sel .name{color:var(--focus)}
+.empty{color:var(--t3);font-size:15px;font-weight:400}
+.row.dis{cursor:default;opacity:.55}.row.dis:hover{border-color:transparent;border-top-color:#25223a;border-bottom-color:#25223a}
+.name{font-size:20px;font-weight:600}
+.desc{font-size:15px;color:var(--t2)}
+.amt{margin-left:auto;text-align:right;font-size:20px;font-weight:600}
+.bdg{display:inline-block;background:var(--badge);color:#D9D7EA;font-size:13px;padding:4px 10px;border-radius:6px;margin-bottom:4px;font-weight:400}
+.radio{width:24px;height:24px;border-radius:50%;border:2px solid var(--t3);flex:none;display:grid;place-items:center}
+.sel .radio{border-color:#fff}.sel .radio::after{content:"";width:12px;height:12px;border-radius:50%;background:var(--focus)}
+.chk{width:24px;height:24px;border:2px solid var(--t3);border-radius:3px;flex:none;display:grid;place-items:center;font-size:15px}
+.on .chk{background:var(--focus);border-color:var(--focus)}
+.tip{background:var(--primary);font-size:13px;padding:6px 12px;border-radius:8px;white-space:nowrap}
+.sbtn{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:8px 16px;font-size:14px}
+.sum{background:var(--surface);border-radius:12px;padding:20px 22px;min-height:430px;display:flex;flex-direction:column}
+.sum .l{display:flex;justify-content:space-between;padding:12px 0;font-size:15px;color:var(--t2)}
+.sum .l b{font-size:22px;color:#fff;font-weight:600}
+.sum .l.tot b{font-size:26px;border-bottom:3px solid var(--primary)}
+.sum .opt{margin-top:auto;font-size:14px;color:var(--t2);display:flex;gap:10px;align-items:center}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#120f26;border-top:1px solid #1F1C36;padding:18px 40px;display:flex;align-items:flex-end;gap:16px}
+.bar .info{flex:1}
+.bar .k{font-size:15px;font-weight:600}
+.bar .v{font-size:22px;font-weight:600;margin:4px 0}
+.bar .v span{color:var(--t3);margin:0 8px;font-weight:400}
+.bar .n{font-size:13px;color:var(--t3)}
+.btn{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:14px 32px;font-size:20px;font-weight:600;min-width:130px}
+.btn:hover{border-color:var(--focus)}
+.btn.p{background:var(--primary);border-color:var(--primary)}
+.btn.p:hover{border-color:var(--focus)}
+.search{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.search label{color:var(--t2);font-size:15px}
+.search select,.search input{background:var(--surface2);border:1px solid var(--border);color:#fff;border-radius:8px;padding:10px 12px;font:inherit;font-size:15px}
+.search select:focus,.search input:focus{outline:none;border-color:var(--focus)}
+.search input{flex:1}
+.sbtn.p{background:var(--primary);border-color:var(--primary);padding:10px 26px;font-size:15px;font-weight:600}
+.cnt{color:var(--t2);font-size:14px;margin:0 0 8px}
+table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:10px;overflow:hidden}
+th{text-align:left;font-size:13px;color:var(--t2);font-weight:500;padding:12px 16px;background:#211e38}
+td{height:44px;padding:0 16px;border-top:1px solid #2a2743;font-size:15px}
+tbody tr.click{cursor:pointer}tbody tr.click:hover td{background:var(--surface2)}
+.r{text-align:right}
+.pg{display:flex;justify-content:center;gap:6px;margin-top:14px}
+.pg button{min-width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:14px}
+.pg button.on{background:var(--primary);border-color:var(--primary)}
+.pg button:disabled{opacity:.35;cursor:default}
+.modal-bg{position:fixed;inset:0;background:rgba(5,4,15,.7);display:grid;place-items:center;z-index:9}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 32px 24px;width:480px}
+.modal p{font-size:19px;margin:8px 0 28px;line-height:1.5}
+.modal .acts{display:flex;justify-content:flex-end;gap:10px}
+.modal .btn{padding:10px 24px;font-size:16px;min-width:0}
+.done{text-align:center;padding-top:110px}
+.done .ic{font-size:64px;line-height:1}
+.done .ic.ok{color:#3DDC97}.done .ic.ng{color:#FF4D5E}
+.done p{font-size:24px;margin:22px 0 40px;white-space:pre-line}
+.done .acts{display:flex;justify-content:center;gap:12px}
+.demo{margin-top:40px;font-size:13px;color:var(--t3)}
+.tbd{border:2px dashed var(--border);border-radius:12px;padding:60px;text-align:center;color:var(--t3);font-size:16px;line-height:1.8}
+.tbd b{color:var(--t2)}
+</style>
+</head>
+<body>
+<header class="top">
+  <button class="back" id="back" aria-label="뒤로">←</button>
+  <h1>단건구매</h1>
+</header>
+<main id="app"></main>
+<div id="bar"></div>
+<div id="modal"></div>
+
+<script>
+// Mock — 참고 화면(PPV-Purchase_Step1/2) 값
+const P={name:'직장상사 길들이기',types:[{n:'소장(단편)',d:'B tv 해지 전까지 무제한'}],langs:['한글자막'],
+  qs:[{n:'HD',p:6500},{n:'UHD',p:10000},{n:'HDR',p:10000}],note:'mobile B tv에서 시청 가능'};
+const PAYS=['청구서','신용카드','휴대폰','카카오페이','네이버페이','PAYCO','SK pay'];
+const S={route:'A',type:0,lang:0,q:0,pay:0,disc:{coupon:false,bcash:false,ocb:false},f:{typ:'',nm:''},page:1};
+// Mock — [A] 조회 결과 (PRD_PRC_ID, PRD_NM, SALE_PRC, PRD_TYP_CD)
+const TYP={'10':'VOD PPV','20':'VOD PPS','41':'VOD PPP','42':'VOD Commerce'};
+const ROWS=Array.from({length:43},(_,i)=>{const c=['10','20','41','42'][i%4];return{id:String(410091000+i*7),nm:`샘플 VOD 상품 ${String(i+1).padStart(2,'0')}`,prc:[6500,3300,10000,2500][i%4],typ:c}});
+const PAGE=10;
+function search(){S.f.typ=$('ftyp').value;S.f.nm=$('fnm').value.trim();S.page=1;S.searched=true;render()}
+function filtered(){return ROWS.filter(r=>(!S.f.typ||r.typ===S.f.typ)&&(!S.f.nm||r.nm.includes(S.f.nm))).sort((a,b)=>a.typ.localeCompare(b.typ)||a.id.localeCompare(b.id))}
+function pick(id){const r=ROWS.find(x=>x.id===id);
+  $('modal').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal"><p>[${r.nm}] 을 구매하겠습니까?</p><div class="acts"><button class="btn" onclick="closeModal()">취소</button><button class="btn p" onclick="confirmPick('${id}')">확인</button></div></div></div>`}
+function closeModal(){$('modal').innerHTML=''}
+function confirmPick(id){closeModal();const r=ROWS.find(x=>x.id===id);P.name=r.nm;P.types=[{n:TYP[r.typ],d:''}];P.langs=[''];P.qs=[{n:'',p:r.prc}];P.note='';S.type=0;S.lang=0;S.q=0;S.pay=0;S.disc={coupon:false,bcash:false,ocb:false};go('B')}
+// 구매취소 / 구매 계속하기: 조회조건 유지 + 자동 조회 (페이지 유지)
+function backToSearch(){S.searched=true;go('A')}
+addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+const $=id=>document.getElementById(id);
+const won=n=>n.toLocaleString('ko-KR')+'원';
+const vat=p=>Math.round(p*0.1);
+function go(r){S.route=r;render();scrollTo(0,0)}
+function calc(){
+  const base=P.qs[S.q].p;let disc=0,bp=0;
+  if(S.disc.coupon)disc=base;else if(S.disc.bcash){disc=base;bp=base+vat(base)}
+  const v=disc>=base?0:vat(base);return{base,disc,vat:v,tot:base-disc+v,bp};
+}
+function bar(btns){return `<div class="bar"><div class="info"><div class="k">상품 선택 내역</div><div class="v">${[P.types[S.type].n,P.langs[S.lang],P.qs[S.q].n,P.note?`<small style="font-size:16px;font-weight:400">${P.note}</small>`:''].filter(Boolean).join('<span>|</span>')}</div><div class="n">결제 후에는 취소 및 환불이 되지 않으며 콘텐츠 시청 시 광고가 포함될 수 있습니다.</div></div>${btns}</div>`}
+const V={
+A(){
+  const list=filtered(),pages=Math.max(1,Math.ceil(list.length/PAGE)),rows=list.slice((S.page-1)*PAGE,S.page*PAGE);
+  const opt=[['','전체'],...Object.entries(TYP)].map(([v,t])=>`<option value="${v}" ${S.f.typ===v?'selected':''}>${t}</option>`).join('');
+  return[`<div class="search"><label>상품유형</label><select id="ftyp">${opt}</select><label>상품명</label><input id="fnm" value="${S.f.nm}" placeholder="상품명 입력 (비우면 전체)" onkeydown="if(event.key==='Enter')search()"><button class="sbtn p" onclick="search()">검색</button></div>
+  <p class="cnt" style="visibility:${S.searched?'visible':'hidden'}">총 ${list.length}건</p>
+  <table><thead><tr><th style="width:150px">상품가격ID</th><th>상품명</th><th class="r" style="width:130px">판매가</th><th style="width:150px">상품유형</th><th style="width:120px">해상도</th><th style="width:150px">시청가능기간</th></tr></thead>
+  <tbody>${!S.searched?`<tr><td colspan="6" style="text-align:center;color:var(--t3);height:120px">[검색]을 눌러 상품을 조회하세요</td></tr>`:rows.length?rows.map(r=>`<tr class="click" onclick="pick('${r.id}')"><td>${r.id}</td><td>${r.nm}</td><td class="r">${won(r.prc)}</td><td>${TYP[r.typ]}</td><td></td><td></td></tr>`).join(''):`<tr><td colspan="6" style="text-align:center;color:var(--t3);height:120px">조회된 상품이 없습니다</td></tr>`}</tbody></table>
+  <div class="pg" style="visibility:${S.searched?'visible':'hidden'}"><button ${S.page===1?'disabled':''} onclick="S.page--;render()">‹</button>${Array.from({length:pages},(_,i)=>`<button class="${S.page===i+1?'on':''}" onclick="S.page=${i+1};render()">${i+1}</button>`).join('')}<button ${S.page===pages?'disabled':''} onclick="S.page++;render()">›</button></div>`,'']},
+B(){
+  const r=(sel,name,desc,amt,bd,cb,radio)=>`<div class="row ${sel?'sel':''}" onclick="${cb}">${radio?'<span class="radio"></span>':''}<div><div class="name">${name}</div>${desc?`<div class="desc">${desc}</div>`:''}</div>${amt?`<div class="amt">${bd?'<span class="bdg">100% 할인 적용</span><br>':''}${amt}</div>`:''}</div>`;
+  return[`<div class="steps"><span class="on">Step 1</span><span>Step 2</span></div><div class="hd"><h2>${P.name}</h2><p>구매하실 상품 유형을 선택해 주세요.</p></div>
+  <div class="cols" style="grid-template-columns:1.1fr .5fr 1.1fr">
+   <div class="col"><h3>상품 유형</h3>${P.types.map((t,i)=>r(S.type===i,t.n,t.d,won(P.qs[S.q].p+vat(P.qs[S.q].p)),0,`S.type=${i};render()`)).join('')}</div>
+   <div class="col"><h3>언어</h3>${P.langs.map((l,i)=>r(S.lang===i,l||'<span class="empty">(빈 값)</span>','','',0,`S.lang=${i};render()`)).join('')}</div>
+   <div class="col"><h3>화질</h3>${P.qs.map((q,i)=>r(S.q===i,q.n||'<span class="empty">(해상도 빈 값)</span>','',won(q.p+vat(q.p)),0,`S.q=${i};render()`,1)).join('')}</div>
+  </div>`,bar(`<button class="btn" onclick="backToSearch()">구매취소</button><button class="btn p" onclick="go('C')">다음</button>`)]},
+C(){const c=calc();
+  const D=[{k:'coupon',n:'쿠폰',d:'',x:1},{k:'bcash',n:'B캐시',d:`${c.bp.toLocaleString()}P 차감`},{k:'ocb',n:'OK 캐쉬백',d:'',x:1},{k:'tm',n:'T멤버십',d:'T멤버십 번호 등록',x:1},{k:'tvp',n:'TV포인트',d:'포인트 조회',x:1}];
+  return[`<div class="steps"><span>Step 1</span><span class="on">Step 2</span></div><div class="hd"><h2>${P.name}</h2><p>결제 및 할인 수단을 선택해 주세요.</p></div>
+  <div class="cols" style="grid-template-columns:260px 1fr 380px;gap:28px">
+   <div class="col"><h3>결제 수단</h3><div style="max-height:470px;overflow:auto">${PAYS.map((p,i)=>i===0?`<div class="row ${S.pay===i?'sel':''}" onclick="S.pay=${i};render()"><span class="radio"></span><div class="name" style="font-weight:500">${p}</div></div>`:`<div class="row dis"><span class="radio"></span><div class="name" style="font-weight:500">${p}</div></div>`).join('')}</div></div>
+   <div class="col"><h3>할인 수단 <small>결제 수단 변경 시, 할인 수단이 변경될 수 있습니다.</small></h3>${D.map(d=>{const on=S.disc[d.k];return`<div class="row ${d.x?'dis':''} ${on?'on sel':''}" ${d.x?'':`onclick="toggle('${d.k}')"`}><span class="chk">${d.x?'✕':on?'✓':''}</span><div class="name" style="width:120px">${d.n}</div><div class="desc" style="${on?'color:var(--focus)':''}">${d.d}</div><div class="amt">${on?'-'+won(c.disc):'0원'}</div>${on&&d.tip?`<span class="tip">${d.tip}</span>`:d.btn?'<button class="sbtn" onclick="event.stopPropagation()">충전</button>':''}</div>`}).join('')}</div>
+   <div class="col"><h3>결제 금액</h3><div class="sum"><div class="l">상품 금액<b>${won(c.base)}</b></div><div class="l">할인 금액<b>${c.disc?'-'+won(c.disc):'0원'}</b></div><div class="l">부가세<b>${c.vat?'+'+won(c.vat):'0원'}</b></div><div class="l tot">구매 금액<b>${won(c.tot)}</b></div><div class="opt"><span class="chk"></span>선택한 결제수단을 다음 번에도 사용</div></div></div>
+  </div>`,bar(`<button class="btn" onclick="go('B')">이전</button><button class="btn" onclick="backToSearch()">구매취소</button><button class="btn p" onclick="go('D')">${won(c.tot)} 결제</button>`)]},
+D(){const ok=!S.fail;
+  const msg=ok?'구매가 완료되었습니다.':'이미 구매한 상품입니다.';
+  return[`<div class="done"><div class="ic ${ok?'ok':'ng'}">${ok?'✔':'✖'}</div><p>${msg}</p>
+  <div class="acts"><button class="btn" onclick="location.reload()">홈으로</button><button class="btn p" onclick="backToSearch()">구매 계속하기</button></div>
+  <div class="demo">시안 전용 · <a href="#" style="color:var(--t2)" onclick="S.fail=!S.fail;render();return false">성공/에러 화면 전환</a> (에러 예: result 3002 reason)</div></div>`,'']}
+};
+function toggle(k){const v=!S.disc[k];if(k!=='ocb'){S.disc.coupon=false;S.disc.bcash=false}S.disc[k]=v;render()}
+function render(){const [b,br]=V[S.route]();$('app').innerHTML=b;$('bar').innerHTML=br;$('app').style.paddingBottom=br?'170px':'24px'}
+$('back').onclick=()=>go('A');
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>설정 시안</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--bg:#0E0B20;--surface:#1B1830;--surface2:#25223D;--border:#3A3754;--primary:#3D2BD9;--focus:#6E74FF;--t1:#fff;--t2:#B5B3C9;--t3:#77758C;--danger:#FF4D5E;--ok:#3DDC97}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--t1);font-family:Pretendard,"Malgun Gothic",sans-serif;min-width:1280px}
+button{font:inherit;color:inherit;cursor:pointer}
+.top{height:56px;display:flex;align-items:center;gap:12px;padding:0 28px;border-bottom:1px solid #1F1C36}
+.top h1{font-size:18px;font-weight:600;margin:0}
+.back{background:none;border:0;font-size:22px;color:var(--t2);padding:4px}
+main{padding:40px}
+.card{max-width:720px;margin:0 auto;background:var(--surface);border-radius:12px;padding:28px 32px}
+.f{margin-bottom:18px}
+.f label{display:block;font-size:14px;color:var(--t2);margin-bottom:8px}
+.f input{width:100%;background:var(--surface2);border:1px solid var(--border);color:#fff;border-radius:8px;padding:12px 14px;font:inherit;font-size:15px}
+.f input:focus{outline:none;border-color:var(--focus)}
+.f input.bad{border-color:var(--danger)}
+.err{color:var(--danger);font-size:13px;margin-top:6px;min-height:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pw{position:relative}.pw input{padding-right:64px}
+.pw button{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--t2);font-size:13px}
+hr{border:0;border-top:1px solid #2a2743;margin:6px 0 22px}
+.acts{display:flex;align-items:center;gap:14px}
+.btn{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:11px 22px;font-size:16px;font-weight:600}
+.btn:hover{border-color:var(--focus)}
+.btn.p{background:var(--primary);border-color:var(--primary);margin-left:auto;padding:11px 34px}
+.btn:disabled{opacity:.5;cursor:default}
+.res{font-size:14px}.res.ok{color:var(--ok)}.res.ng{color:var(--danger)}
+.toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);padding:12px 22px;border-radius:10px;font-size:15px;opacity:0;transition:.2s}
+.toast.on{opacity:1}
+.demo{max-width:720px;margin:16px auto 0;font-size:13px;color:var(--t3)}
+</style>
+</head>
+<body>
+<header class="top"><button class="back" aria-label="뒤로">←</button><h1>설정</h1></header>
+<main>
+  <div class="card">
+    <div class="f"><label>STG 서버 주소</label><input id="serverUrl" placeholder="https://"><div class="err" id="e_serverUrl"></div></div>
+    <div class="f"><label>서비스관리번호</label><input id="svcMgmtNo" placeholder="숫자만 입력"><div class="err" id="e_svcMgmtNo"></div></div>
+    <hr>
+    <div class="f"><label>DB 접속 정보</label><input id="dbConnectString" placeholder="host:port/serviceName"><div class="err" id="e_dbConnectString"></div></div>
+    <div class="two">
+      <div class="f"><label>DB 아이디</label><input id="dbUser"><div class="err" id="e_dbUser"></div></div>
+      <div class="f"><label>DB 비밀번호</label><div class="pw"><input id="dbPassword" type="password"><button onclick="togglePw()" id="pwt">보기</button></div><div class="err" id="e_dbPassword"></div></div>
+    </div>
+    <hr>
+    <div class="acts"><button class="btn" id="tbtn" onclick="test()">연결 테스트</button><span class="res" id="res"></span><button class="btn p" onclick="save()">저장</button></div>
+  </div>
+  <div class="demo">시안 전용 · 연결 테스트는 Mock (서비스관리번호가 0으로 시작하면 0건, DB 아이디가 비어 있으면 실패)</div>
+</main>
+<div class="toast" id="toast">저장되었습니다.</div>
+<script>
+const F=[['serverUrl','STG 서버 주소'],['svcMgmtNo','서비스관리번호'],['dbConnectString','DB 접속 정보'],['dbUser','DB 아이디'],['dbPassword','DB 비밀번호']];
+const $=id=>document.getElementById(id);
+function validate(){let ok=true;
+  F.forEach(([k,n])=>{const v=$(k).value.trim();let m='';
+    if(!v)m=`${n}를 입력해 주세요.`;
+    else if(k==='serverUrl'&&!/^https?:\/\//.test(v))m='http:// 또는 https:// 로 시작해야 합니다.';
+    else if(k==='svcMgmtNo'&&!/^\d+$/.test(v))m='숫자만 입력해 주세요.';
+    $('e_'+k).textContent=m;$(k).classList.toggle('bad',!!m);if(m)ok=false});
+  return ok}
+function save(){if(!validate())return;const t=$('toast');t.classList.add('on');setTimeout(()=>t.classList.remove('on'),2000)}
+function togglePw(){const i=$('dbPassword');i.type=i.type==='password'?'text':'password';$('pwt').textContent=i.type==='password'?'보기':'숨기기'}
+function test(){const b=$('tbtn'),r=$('res');b.disabled=true;b.textContent='연결 확인 중…';r.textContent='';r.className='res';
+  setTimeout(()=>{b.disabled=false;b.textContent='연결 테스트';
+    if(!$('dbUser').value.trim()){r.textContent='연결 실패 · ORA-01017: invalid username/password (Mock)';r.className='res ng'}
+    else if($('svcMgmtNo').value.trim().startsWith('0')){r.textContent='연결 성공 · 서비스관리번호에 해당하는 STB가 없습니다.';r.className='res ng'}
+    else{r.textContent='연결 성공 · STB ID: {SAMPLE-STB-ID}';r.className='res ok'}},700)}
+</script>
+</body>
+</html>

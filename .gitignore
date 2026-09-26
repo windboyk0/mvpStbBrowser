@@ -1,0 +1,37 @@
+# Reference materials (local only — never commit)
+vibeContext/Reference/
+
+# Dependencies
+node_modules/
+
+# Build output
+out/
+dist/
+release/
+.vite/
+*.tsbuildinfo
+
+# Test
+coverage/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Claude Code (local only)
+.claude/settings.local.json
