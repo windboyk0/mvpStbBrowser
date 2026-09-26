@@ -1,0 +1,44 @@
+# 20260926 개발완료 — 020_singlePurchase
+
+## 17:30 단건구매 1차 확정 범위 구현
+- 작업: T1, T1a, T2, T3, T4, T5, T6, T7, T8, T9, T10
+- 변경 파일:
+  - main (`src/main/singlePurchase/`)
+    - `ipc.ts` — `register(ipcMain)`: `singlePurchase:checkSettings` / `singlePurchase:search` / `singlePurchase:purchase`
+    - `settings.ts` — electron-store(`settings`) 직접 읽기, 필수 5개 키 누락 검사, `dbPasswordEnc` safeStorage 복호화
+    - `db.ts` — oracledb Thin 접속 헬퍼 (접속 → 실행 → 종료, `OUT_FORMAT_OBJECT`, Query 끝 `;` 제거)
+    - `search.ts` — 목록 + 건수 Query, 바인드 변수(`prdTypCd`, `prdNm`, `offset`, `pageSize`), 입력값 정규화(허용 유형 코드 외 → 전체, 빈 상품명 → NULL)
+    - `purchase.ts` — STB ID 조회 → IF-EPS-001 `fetch` POST → 응답 해석
+    - `eps.ts` — IF-EPS-001 URL · Header · Body 매핑, TimeStamp/requestDateTime 형식, Response → 메시지 (electron 의존 없음)
+    - `eps.test.ts` — 요청 매핑 · 응답 해석 단위 테스트
+    - `types.ts` — IPC 요청/응답 형식
+    - `sql/productList.sql`, `sql/productCount.sql`, `sql/stbId.sql` — spec `query_*.sql` 사본 (문장별 분리, `;` 제거), `?raw` import 로 번들
+  - renderer (`src/renderer/src/screens/singlePurchase/`)
+    - `index.tsx` — 진입점(default export), 화면 흐름 A→B→C→D, R0 설정 팝업, 조회조건·페이지 유지 복귀
+    - `SearchView.tsx` — [A] 검색조건 2개, 6컬럼 목록, 건수, 페이지, 최초 미조회 안내 / 결과 없음 / 조회 실패(`danger`)
+    - `Step1View.tsx`, `Step2View.tsx`, `DoneView.tsx` — [B] / [C] / [D]
+    - `components.tsx` — StepChips, PurchaseHeader, OptionRow, Radio, Check, PurchaseActionBar, Modal
+    - `amount.ts` + `amount.test.ts` — 금액 계산 (할인 없음 / B캐시 전액)
+    - `format.ts`, `types.ts`, `singlePurchase.module.css`
+  - `design/singlePurchase_spec.md` — 작업 목록 T1 ~ T10 체크
+- 내용:
+  - 공통 파일(`App.tsx`, `menus.ts`, `preload`, `main/index.ts`, `package.json`) 수정 없이 자동 연결. 다른 화면 import 없음 (IPC 타입은 main/renderer 각각 보유)
+  - Step 1: 선택 상품 1건을 기본 선택으로 표시, 표시 가격 = 판매가 + 부가세. 언어 `(빈 값)`, 해상도 빈 값이면 `(해상도 빈 값)` (시안 표현)
+  - Step 2: 결제 수단 청구서만 활성, 할인 수단 B캐시만 활성(`{N}P 차감`, N = 체크 시 판매가+부가세 / 미체크 0 — 시안 계산), 나머지 ☒ 비활성, `다음 번에도 사용` 표시만
+  - IF-EPS-001: 값 없는 Header 는 빈 문자열, Body null 필드는 JSON `null`, `mac` 생략, `contentId` 미전송, `paymentType` null(청구서)
+  - [D]: `result = "0000"` 성공, 그 외 `reason`(`\n` 줄바꿈), 응답 없음/JSON 아님 → `구매 요청에 실패했습니다.`, STB 0건 / 조회 실패 메시지 R5.1 대로
+- 관련 spec: R0 ~ R5, 4. 설계 전체
+- 검증:
+  - `npm run build` (typecheck + electron-vite build) 통과, `npx eslint .` 통과, `npm test` 12건 통과 (신규 8건: 금액 3, IF-EPS-001 5)
+  - 빌드 산출물에서 `require("oracledb")` external 유지, Query 문자열 번들 포함 확인
+  - 빌드 앱 실행 시 IPC 등록 오류 로그 없음
+  - **실 DB · STG 서버 연동은 미검증** (접속 정보 없음)
+- 제가 정한 부분 (확인 필요):
+  - 페이지 번호는 **10개 단위 블록**으로 표시 (`‹` `›` 는 1페이지씩 이동) — 건수가 많을 때 버튼 폭주 방지
+  - IF-EPS-001 요청 타임아웃 30초 (초과 시 `구매 요청에 실패했습니다.`)
+  - T멤버십 Body 필드는 boolean 플래그만 `false` 전송 (`useTmembership`, `useUniverseDiscount`, `useUniversePoint`)
+  - 조회 중 목록 영역 `조회 중…` 표시 (최초 조회 시), 결제 요청 중 Step 2 버튼 비활성
+  - 설정 팝업은 Esc/배경 클릭으로 닫히지 않음 (버튼으로만), 구매 확인 팝업은 Esc/배경 클릭 = 취소 (spec)
+- 비고:
+  - HTTP 응답이 JSON 이 아니면 통신 오류로 처리 (HTTP 상태코드 자체는 판단에 사용하지 않음 — 규격상 HTTP 200 + result 코드)
+  - 해상도 · 시청가능기간은 Query 수신 후 `sql/productList.sql` 의 `NULL AS ...` 교체 필요 (spec `query_productList.sql` 과 함께)
