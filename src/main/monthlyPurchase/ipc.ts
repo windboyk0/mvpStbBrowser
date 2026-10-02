@@ -6,9 +6,11 @@ import {
   productListSql,
   agreementListSql,
   stbIdSql,
+  couponListSql,
   type ProductType
 } from './queries'
 import { buildEpsRequest, callEps, type PrdAgmtId } from './eps'
+import { toCoupon, type Coupon } from './coupon'
 
 // IPC 계약 — renderer `screens/monthlyPurchase/types.ts` 와 같은 형식 (코드 공유 없이 형식만 맞춘다)
 const PAGE_SIZE = 10
@@ -23,9 +25,16 @@ interface AgreementsPayload {
   prdPrcId?: string
 }
 
+interface CouponListPayload {
+  idProduct?: string
+  prdAgmtId?: PrdAgmtId
+  amtPrice?: number
+}
+
 interface PurchasePayload {
   prdPrcId?: string
   prdAgmtId?: PrdAgmtId
+  couponNo?: string | null
 }
 
 type Result<T> = ({ ok: true } & T) | { ok: false; error: string }
@@ -103,6 +112,26 @@ async function agreements(
   }
 }
 
+/** R5.1 ~ R5.3 사용가능 쿠폰 조회 — PL/SQL 블록 실행, OUT REF CURSOR 전체 읽기 */
+async function couponList(payload: CouponListPayload): Promise<Result<{ rows: Coupon[] }>> {
+  try {
+    const settings = readSettings()
+    const binds = {
+      svcMgmtNo: settings.svcMgmtNo,
+      idProduct: str(payload?.idProduct),
+      prdAgmtId: payload?.prdAgmtId ?? null,
+      idContents: null,
+      amtPrice: Number(payload?.amtPrice) || 0
+    }
+    return await withConnection(settings, async (db) => {
+      const rows = await db.queryCursor(couponListSql(), binds, 'couponCursor')
+      return { ok: true as const, rows: rows.map(toCoupon) }
+    })
+  } catch (err) {
+    return { ok: false, error: errorMessage(err) }
+  }
+}
+
 /** R3 — 결과: 응답 있음(response) / 오류 메시지(error) */
 type PurchaseResult =
   { kind: 'response'; result: string; reason: string } | { kind: 'error'; message: string }
@@ -127,6 +156,7 @@ async function purchase(payload: PurchasePayload): Promise<PurchaseResult> {
       serverUrl: settings.serverUrl,
       prdPrcId: str(payload?.prdPrcId),
       prdAgmtId: payload?.prdAgmtId ?? null,
+      couponNo: payload?.couponNo ? String(payload.couponNo) : null,
       stbId,
       now: new Date()
     })
@@ -144,6 +174,9 @@ export function register(ipcMain: IpcMain): void {
   ipcMain.handle('monthlyPurchase:search', (_e, payload: SearchPayload) => search(payload))
   ipcMain.handle('monthlyPurchase:agreements', (_e, payload: AgreementsPayload) =>
     agreements(payload)
+  )
+  ipcMain.handle('monthlyPurchase:couponList', (_e, payload: CouponListPayload) =>
+    couponList(payload)
   )
   ipcMain.handle('monthlyPurchase:purchase', (_e, payload: PurchasePayload) => purchase(payload))
 }

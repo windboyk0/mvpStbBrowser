@@ -340,10 +340,10 @@
 - [x] T9. [D] 구매완료 화면 + `[구매취소]` / `[구매 계속하기]` 복귀 (조건 · 페이지 유지 자동 조회) — R4, 2. 공통 동작
 
 ### 2차 — 쿠폰 (작성 중 · `1.3 쿠폰 잠정값` 으로 구현)
-- [ ] T10. `monthlyPurchase:couponList` — `query_couponList.sql` Procedure 호출 · REF CURSOR 읽기 (끝 `;` 유지) — R5.1 ~ R5.3, R5.6
-- [ ] T11. [C] 쿠폰 행 활성화 + 쿠폰 선택 팝업 (0건 비활성, 선택 · 해제) — R5.4, R5.5, 4. 설계 › 쿠폰 선택 팝업
-- [ ] T12. 결제 금액에 쿠폰 할인 반영 + 단위 테스트 (쿠폰 미적용 / 적용) — R5.7
-- [ ] T13. IF-EPS-001 `useCoupon` / `couponNo` 매핑 + 단위 테스트 — R5.8
+- [x] T10. `monthlyPurchase:couponList` — `query_couponList.sql` Procedure 호출 · REF CURSOR 읽기 (끝 `;` 유지) — R5.1 ~ R5.3, R5.6
+- [x] T11. [C] 쿠폰 행 활성화 + 쿠폰 선택 팝업 (0건 비활성, 선택 · 해제) — R5.4, R5.5, 4. 설계 › 쿠폰 선택 팝업
+- [x] T12. 결제 금액에 쿠폰 할인 반영 + 단위 테스트 (쿠폰 미적용 / 적용) — R5.7
+- [x] T13. IF-EPS-001 `useCoupon` / `couponNo` 매핑 + 단위 테스트 — R5.8
 
 - 추후: T멤버십 활성, 할인 수단 동시 적용 규칙, 청구서 외 결제 수단
 

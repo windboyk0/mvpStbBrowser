@@ -8,7 +8,8 @@ import productListVas from '../../../vibeContext/spec/030_monthlyPurchase/design
 import productListIptv from '../../../vibeContext/spec/030_monthlyPurchase/design/query_productList_iptv.sql?raw'
 import agreementList from '../../../vibeContext/spec/030_monthlyPurchase/design/query_agreementList.sql?raw'
 import stbId from '../../../vibeContext/spec/030_monthlyPurchase/design/query_stbId.sql?raw'
-import { splitStatements } from './sql'
+import couponList from '../../../vibeContext/spec/030_monthlyPurchase/design/query_couponList.sql?raw'
+import { splitStatements, plsqlBlock } from './sql'
 
 /** 상품유형 선택값 (R1.2) — 'ALL' = 전체 */
 export const PRODUCT_TYPES = ['ALL', 'VOD', 'CMP', 'YTP', 'DNP', 'VAS', 'IPTV'] as const
@@ -42,4 +43,9 @@ export function agreementListSql(): string {
 
 export function stbIdSql(): string {
   return splitStatements(stbId)[0]
+}
+
+/** R5.2 사용가능 쿠폰 조회 — PL/SQL 블록 그대로 (목록/건수 분리 없음, 끝 `;` 유지) */
+export function couponListSql(): string {
+  return plsqlBlock(couponList)
 }

@@ -1,12 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { buildAgreementOptions, won, type AgreementOption } from './agreementOptions'
-import type { AgreementsResult, Product, PurchaseResult } from './types'
+import { paymentAmount } from './amount'
+import CouponModal from './CouponModal'
+import type { AgreementsResult, Coupon, CouponListResult, Product, PurchaseResult } from './types'
 import styles from './MonthlyPurchase.module.css'
 
 type AgreementState =
   | { status: 'loading' }
   | { status: 'done'; options: AgreementOption[] }
   | { status: 'error'; error: string }
+
+// R5 쿠폰 조회 상태 — 조회 전 · 조회 중은 비활성(0원)
+type CouponState =
+  { status: 'loading' } | { status: 'done'; coupons: Coupon[] } | { status: 'error'; error: string }
 
 // R2.3 — 1차는 청구서만 활성
 const PAYMENT_METHODS = [
@@ -18,8 +24,8 @@ const PAYMENT_METHODS = [
   'PAYCO',
   'SK pay'
 ]
-// R2.4 — 1차는 2개 모두 비활성
-const DISCOUNT_METHODS = ['쿠폰', 'T멤버십']
+// R2.4 — 쿠폰은 2차(R5)에서 활성, T멤버십은 계속 비활성
+const DISABLED_DISCOUNT_METHODS = ['T멤버십']
 
 interface PurchaseViewProps {
   product: Product
@@ -36,6 +42,9 @@ export default function PurchaseView({
   const [agreements, setAgreements] = useState<AgreementState>({ status: 'loading' })
   const [selected, setSelected] = useState(0)
   const [purchasing, setPurchasing] = useState(false)
+  const [coupons, setCoupons] = useState<CouponState>({ status: 'loading' })
+  const [applied, setApplied] = useState<Coupon | null>(null)
+  const [couponModal, setCouponModal] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -63,8 +72,56 @@ export default function PurchaseView({
   }, [product])
 
   const option = agreements.status === 'done' ? agreements.options[selected] : undefined
-  const price = option?.price ?? 0
-  const discount = 0
+  const { price, discount, total } = paymentAmount(option?.price ?? 0, applied)
+
+  // R5.1 · Q8 — [C] 진입(첫 약정) 및 약정 변경 시 쿠폰 (재)조회
+  const hasOption = option !== undefined
+  const optionAgmtId = option?.prdAgmtId ?? null
+  const optionPrice = option?.price ?? 0
+  useEffect(() => {
+    if (!hasOption) return
+    let alive = true
+    window.api
+      .invoke<CouponListResult>('monthlyPurchase:couponList', {
+        idProduct: product.idProduct,
+        prdAgmtId: optionAgmtId,
+        amtPrice: optionPrice
+      })
+      .catch((err): CouponListResult => ({
+        ok: false,
+        error: err instanceof Error ? err.message : String(err)
+      }))
+      .then((result) => {
+        if (!alive) return
+        setApplied(null)
+        setCoupons(
+          result.ok
+            ? { status: 'done', coupons: result.rows }
+            : { status: 'error', error: result.error }
+        )
+      })
+    return () => {
+      alive = false
+    }
+    // selected: 약정 옵션이 바뀌면 (약정 ID · 가격이 같아도) 재조회
+  }, [product, selected, hasOption, optionAgmtId, optionPrice])
+
+  // Q8 — 약정 변경 시 적용 중인 쿠폰 해제 + 재조회 대기
+  const selectAgreement = (i: number): void => {
+    if (i === selected) return
+    setSelected(i)
+    setApplied(null)
+    setCoupons({ status: 'loading' })
+  }
+
+  const couponEnabled = coupons.status === 'done' && coupons.coupons.length > 0
+  // R5.5 — 미적용: 선택 팝업 열기 / 적용: 체크 해제
+  const clickCoupon = (): void => {
+    if (!couponEnabled) return
+    if (applied) setApplied(null)
+    else setCouponModal(true)
+  }
+  const closeCouponModal = useCallback(() => setCouponModal(false), [])
 
   const pay = async (): Promise<void> => {
     if (!option || purchasing) return
@@ -73,7 +130,8 @@ export default function PurchaseView({
     try {
       result = await window.api.invoke<PurchaseResult>('monthlyPurchase:purchase', {
         prdPrcId: product.idProduct,
-        prdAgmtId: option.prdAgmtId
+        prdAgmtId: option.prdAgmtId,
+        couponNo: applied?.noCoupon ?? null
       })
     } catch {
       result = { kind: 'error', message: '구매 요청에 실패했습니다.' }
@@ -106,7 +164,7 @@ export default function PurchaseView({
                 role="radio"
                 aria-checked={i === selected}
                 className={`${styles.optRow} ${i === selected ? styles.optSel : ''}`}
-                onClick={() => setSelected(i)}
+                onClick={() => selectAgreement(i)}
               >
                 <span className={styles.radio} />
                 <span className={styles.optName}>{o.label}</span>
@@ -133,7 +191,26 @@ export default function PurchaseView({
 
         <section>
           <h3 className={styles.colTitle}>할인 수단</h3>
-          {DISCOUNT_METHODS.map((m) => (
+          <div
+            role="checkbox"
+            aria-checked={applied !== null}
+            aria-disabled={!couponEnabled}
+            className={`${styles.optRow} ${applied ? styles.optSel : ''} ${
+              couponEnabled ? '' : styles.optDis
+            }`}
+            onClick={clickCoupon}
+          >
+            <span className={styles.check}>{applied ? '✓' : couponEnabled ? '' : '✕'}</span>
+            <span className={styles.optName}>쿠폰</span>
+            {applied && <span className={styles.optDesc}>{applied.nmCoupon}</span>}
+            {coupons.status === 'error' && (
+              <span className={`${styles.optDesc} ${styles.danger}`}>
+                조회에 실패했습니다. ({coupons.error})
+              </span>
+            )}
+            <span className={styles.optAmt}>{applied ? `-${won(discount)}` : won(0)}</span>
+          </div>
+          {DISABLED_DISCOUNT_METHODS.map((m) => (
             <div
               key={m}
               role="checkbox"
@@ -155,13 +232,13 @@ export default function PurchaseView({
               상품 금액<b>{won(price)}</b>
             </div>
             <div className={styles.sumLine}>
-              할인 금액<b>{won(discount)}</b>
+              할인 금액<b>{discount > 0 ? `-${won(discount)}` : won(0)}</b>
             </div>
             <div className={styles.sumLine}>
               부가세<b>포함</b>
             </div>
             <div className={`${styles.sumLine} ${styles.sumTotal}`}>
-              구매 금액<b>{won(price - discount)}</b>
+              구매 금액<b>{won(total)}</b>
             </div>
           </div>
         </section>
@@ -189,9 +266,21 @@ export default function PurchaseView({
           disabled={!option || purchasing}
           onClick={() => void pay()}
         >
-          {won(price - discount)} 결제
+          {won(total)} 결제
         </button>
       </div>
+
+      {couponModal && coupons.status === 'done' && (
+        <CouponModal
+          coupons={coupons.coupons}
+          appliedNo={applied?.noCoupon ?? null}
+          onSelect={(c) => {
+            setApplied(c)
+            setCouponModal(false)
+          }}
+          onClose={closeCouponModal}
+        />
+      )}
     </div>
   )
 }

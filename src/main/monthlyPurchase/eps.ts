@@ -6,6 +6,8 @@ export interface EpsRequestInput {
   serverUrl: string
   prdPrcId: string
   prdAgmtId: PrdAgmtId
+  /** 적용 쿠폰 NO_COUPON (R5.8) — 미적용 null */
+  couponNo: string | null
   stbId: string
   now: Date
 }
@@ -46,6 +48,9 @@ export function buildEpsRequest(input: EpsRequestInput): EpsRequest {
     Trace: 'IPTV'
   }
 
+  // R5.8 쿠폰 적용 시 true / NO_COUPON, 미적용 시 false / null
+  const couponNo = input.couponNo ? input.couponNo : null
+
   const body: Record<string, unknown> = {
     if: 'IF-EPS-001',
     ver: '5.0',
@@ -55,8 +60,8 @@ export function buildEpsRequest(input: EpsRequestInput): EpsRequest {
     stb_id: input.stbId,
     requestDateTime: formatDateTime(input.now),
     prdAgmtId: input.prdAgmtId,
-    useCoupon: false,
-    couponNo: null,
+    useCoupon: couponNo !== null,
+    couponNo,
     useBcash: false,
     useNewBpoint: false,
     useUniverseDiscount: false,

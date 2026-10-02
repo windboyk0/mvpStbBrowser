@@ -38,6 +38,16 @@ export type SearchResult =
 
 export type AgreementsResult = { ok: true; rows: Agreement[] } | { ok: false; error: string }
 
+/** R5.3 사용가능 쿠폰 (NO_COUPON / NM_COUPON / DD_APPLY_END / AMT_DISCOUNT) */
+export interface Coupon {
+  noCoupon: string
+  nmCoupon: string
+  ddApplyEnd: string
+  amtDiscount: number
+}
+
+export type CouponListResult = { ok: true; rows: Coupon[] } | { ok: false; error: string }
+
 export type PurchaseResult =
   { kind: 'response'; result: string; reason: string } | { kind: 'error'; message: string }
 

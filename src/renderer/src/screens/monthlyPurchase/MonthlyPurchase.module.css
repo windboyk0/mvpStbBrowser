@@ -215,6 +215,68 @@
   border-color: var(--focus);
 }
 
+/* ===== 쿠폰 선택 팝업 ===== */
+.couponModal {
+  width: 560px;
+}
+
+.couponTitle {
+  margin: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.couponList {
+  max-height: 360px;
+  margin: 12px 0 20px;
+  overflow-y: auto;
+}
+
+.couponRow {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.couponRow:hover {
+  border-color: var(--focus);
+  background: var(--surface-2);
+}
+
+.couponOn {
+  color: var(--focus);
+}
+
+.couponName {
+  flex: 1;
+  min-width: 0;
+  font-size: 17px;
+  font-weight: 500;
+  word-break: keep-all;
+}
+
+.couponDate {
+  flex: none;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.couponOn .couponDate {
+  color: var(--focus);
+}
+
+.couponAmt {
+  flex: none;
+  font-size: 17px;
+  font-weight: 600;
+}
+
 /* ===== [C] 약정 · 결제 · 할인 ===== */
 .purchase {
   padding-bottom: 130px;
@@ -336,6 +398,27 @@
   border: 2px solid var(--text-3);
   border-radius: 3px;
   font-size: 15px;
+}
+
+/* 할인 수단 적용 (체크) */
+.optSel .check {
+  border-color: var(--focus);
+  background: var(--primary);
+}
+
+/* 할인 수단 행 보조 문구 — 적용 쿠폰명 / 조회 실패 */
+.optDesc {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: 14px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.optDesc.danger {
+  color: var(--danger);
+  white-space: normal;
 }
 
 .summary {
