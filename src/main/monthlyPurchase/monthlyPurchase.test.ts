@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { splitStatements } from './sql'
-import { PRODUCT_TYPES, productListSql, agreementListSql, stbIdSql } from './queries'
+import { splitStatements, plsqlBlock } from './sql'
+import { PRODUCT_TYPES, productListSql, agreementListSql, stbIdSql, couponListSql } from './queries'
 import { buildEpsRequest, formatDateTime, formatTimeStamp, parseEpsResponse } from './eps'
+import { toCoupon } from './coupon'
 
 describe('splitStatements', () => {
   it('헤더 주석 제거, 구분 주석 기준 분리, 끝 ; 제거', () => {
@@ -37,6 +38,47 @@ describe('Query 파일 (R1.2 · R1.3)', () => {
   })
 })
 
+describe('쿠폰 조회 PL/SQL (R5.2)', () => {
+  it('plsqlBlock: 헤더 주석만 제거, 끝 END; 유지', () => {
+    const text = `\uFEFF/* 헤더 */\nBEGIN\n  NULL;\nEND;\n`
+    expect(plsqlBlock(text)).toBe('BEGIN\n  NULL;\nEND;')
+  })
+
+  it('쿠폰 Query: DECLARE … END; 블록, 바인드 변수', () => {
+    const sql = couponListSql()
+    expect(sql.startsWith('DECLARE')).toBe(true)
+    expect(sql.endsWith('END;')).toBe(true)
+    expect(sql).not.toMatch(/^\s*\/\*/)
+    for (const bind of [':svcMgmtNo', ':idProduct', ':prdAgmtId', ':idContents', ':amtPrice']) {
+      expect(sql).toContain(bind)
+    }
+    expect(sql).toContain(':couponCursor')
+  })
+
+  it('결과 행 → 쿠폰 (Q9 · Q10)', () => {
+    expect(
+      toCoupon({
+        NO_COUPON: 'C001',
+        NM_COUPON: '테스트 쿠폰',
+        NM_COUPON2: '다른 이름',
+        DD_APPLY_END: '20261231',
+        AMT_DISCOUNT: 3000
+      })
+    ).toEqual({
+      noCoupon: 'C001',
+      nmCoupon: '테스트 쿠폰',
+      ddApplyEnd: '20261231',
+      amtDiscount: 3000
+    })
+    expect(toCoupon({ DD_APPLY_END: new Date(2026, 11, 31), AMT_DISCOUNT: null })).toEqual({
+      noCoupon: '',
+      nmCoupon: '',
+      ddApplyEnd: '20261231',
+      amtDiscount: 0
+    })
+  })
+})
+
 describe('IF-EPS-001 요청 매핑', () => {
   const now = new Date(2026, 8, 26, 9, 5, 7, 42)
 
@@ -50,6 +92,7 @@ describe('IF-EPS-001 요청 매핑', () => {
       serverUrl: 'http://example.invalid/',
       prdPrcId: 'P001',
       prdAgmtId: null,
+      couponNo: null,
       stbId: 'STB-TEST',
       now
     })
@@ -88,10 +131,39 @@ describe('IF-EPS-001 요청 매핑', () => {
       serverUrl: 'http://example.invalid',
       prdPrcId: 'P001',
       prdAgmtId: 'AG12',
+      couponNo: null,
       stbId: 'S',
       now
     })
     expect(req.body.prdAgmtId).toBe('AG12')
+  })
+
+  it('쿠폰 적용: useCoupon true / couponNo = NO_COUPON (R5.8)', () => {
+    const req = buildEpsRequest({
+      serverUrl: 'http://example.invalid',
+      prdPrcId: 'P001',
+      prdAgmtId: null,
+      couponNo: 'C001',
+      stbId: 'S',
+      now
+    })
+    expect(req.body.useCoupon).toBe(true)
+    expect(req.body.couponNo).toBe('C001')
+  })
+
+  it('쿠폰 미적용: useCoupon false / couponNo null (빈 값도 미적용)', () => {
+    for (const couponNo of [null, '']) {
+      const req = buildEpsRequest({
+        serverUrl: 'http://example.invalid',
+        prdPrcId: 'P001',
+        prdAgmtId: null,
+        couponNo,
+        stbId: 'S',
+        now
+      })
+      expect(req.body.useCoupon).toBe(false)
+      expect(req.body.couponNo).toBeNull()
+    }
   })
 
   it('응답 파싱', () => {
