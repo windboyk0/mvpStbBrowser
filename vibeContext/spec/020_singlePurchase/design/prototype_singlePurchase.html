@@ -95,10 +95,10 @@ tbody tr.click{cursor:pointer}tbody tr.click:hover td{background:var(--surface2)
 
 <script>
 // Mock — 참고 화면(PPV-Purchase_Step1/2) 값
-const P={name:'직장상사 길들이기',types:[{n:'소장(단편)',d:'B tv 해지 전까지 무제한'}],langs:['한글자막'],
-  qs:[{n:'HD',p:6500},{n:'UHD',p:10000},{n:'HDR',p:10000}],note:'mobile B tv에서 시청 가능'};
+const P={name:'직장상사 길들이기',types:[{n:'소장(단편)',d:'B tv 해지 전까지 무제한'}],periods:[''],
+  qs:[{n:'HD',p:6500},{n:'UHD',p:10000},{n:'HDR',p:10000}],note:''};
 const PAYS=['청구서','신용카드','휴대폰','카카오페이','네이버페이','PAYCO','SK pay'];
-const S={route:'A',type:0,lang:0,q:0,pay:0,disc:{coupon:false,bcash:false,ocb:false},f:{typ:'',nm:''},page:1};
+const S={route:'A',type:0,per:0,q:0,pay:0,disc:{coupon:false,bcash:false,ocb:false},f:{typ:'',nm:''},page:1};
 // Mock — [A] 조회 결과 (PRD_PRC_ID, PRD_NM, SALE_PRC, PRD_TYP_CD)
 const TYP={'10':'VOD PPV','20':'VOD PPS','41':'VOD PPP','42':'VOD Commerce'};
 const ROWS=Array.from({length:43},(_,i)=>{const c=['10','20','41','42'][i%4];return{id:String(410091000+i*7),nm:`샘플 VOD 상품 ${String(i+1).padStart(2,'0')}`,prc:[6500,3300,10000,2500][i%4],typ:c}});
@@ -108,7 +108,7 @@ function filtered(){return ROWS.filter(r=>(!S.f.typ||r.typ===S.f.typ)&&(!S.f.nm|
 function pick(id){const r=ROWS.find(x=>x.id===id);
   $('modal').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal"><p>[${r.nm}] 을 구매하겠습니까?</p><div class="acts"><button class="btn" onclick="closeModal()">취소</button><button class="btn p" onclick="confirmPick('${id}')">확인</button></div></div></div>`}
 function closeModal(){$('modal').innerHTML=''}
-function confirmPick(id){closeModal();const r=ROWS.find(x=>x.id===id);P.name=r.nm;P.types=[{n:TYP[r.typ],d:''}];P.langs=[''];P.qs=[{n:'',p:r.prc}];P.note='';S.type=0;S.lang=0;S.q=0;S.pay=0;S.disc={coupon:false,bcash:false,ocb:false};go('B')}
+function confirmPick(id){closeModal();const r=ROWS.find(x=>x.id===id);P.name=r.nm;P.types=[{n:TYP[r.typ],d:''}];P.periods=[''];P.qs=[{n:'',p:r.prc}];P.note='';S.type=0;S.per=0;S.q=0;S.pay=0;S.disc={coupon:false,bcash:false,ocb:false};go('B')}
 // 구매취소 / 구매 계속하기: 조회조건 유지 + 자동 조회 (페이지 유지)
 function backToSearch(){S.searched=true;go('A')}
 addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
@@ -121,7 +121,7 @@ function calc(){
   if(S.disc.coupon)disc=base;else if(S.disc.bcash){disc=base;bp=base+vat(base)}
   const v=disc>=base?0:vat(base);return{base,disc,vat:v,tot:base-disc+v,bp};
 }
-function bar(btns){return `<div class="bar"><div class="info"><div class="k">상품 선택 내역</div><div class="v">${[P.types[S.type].n,P.langs[S.lang],P.qs[S.q].n,P.note?`<small style="font-size:16px;font-weight:400">${P.note}</small>`:''].filter(Boolean).join('<span>|</span>')}</div><div class="n">결제 후에는 취소 및 환불이 되지 않으며 콘텐츠 시청 시 광고가 포함될 수 있습니다.</div></div>${btns}</div>`}
+function bar(btns){return `<div class="bar"><div class="info"><div class="k">상품 선택 내역</div><div class="v">${[P.types[S.type].n,P.periods[S.per],P.qs[S.q].n,P.note?`<small style="font-size:16px;font-weight:400">${P.note}</small>`:''].filter(Boolean).join('<span>|</span>')}</div><div class="n">결제 후에는 취소 및 환불이 되지 않으며 콘텐츠 시청 시 광고가 포함될 수 있습니다.</div></div>${btns}</div>`}
 const V={
 A(){
   const list=filtered(),pages=Math.max(1,Math.ceil(list.length/PAGE)),rows=list.slice((S.page-1)*PAGE,S.page*PAGE);
@@ -136,7 +136,7 @@ B(){
   return[`<div class="steps"><span class="on">Step 1</span><span>Step 2</span></div><div class="hd"><h2>${P.name}</h2><p>구매하실 상품 유형을 선택해 주세요.</p></div>
   <div class="cols" style="grid-template-columns:1.1fr .5fr 1.1fr">
    <div class="col"><h3>상품 유형</h3>${P.types.map((t,i)=>r(S.type===i,t.n,t.d,won(P.qs[S.q].p+vat(P.qs[S.q].p)),0,`S.type=${i};render()`)).join('')}</div>
-   <div class="col"><h3>언어</h3>${P.langs.map((l,i)=>r(S.lang===i,l||'<span class="empty">(빈 값)</span>','','',0,`S.lang=${i};render()`)).join('')}</div>
+   <div class="col"><h3>시청가능기간</h3>${P.periods.map((l,i)=>r(S.per===i,l||'<span class="empty">(시청가능기간 빈 값)</span>','','',0,`S.per=${i};render()`)).join('')}</div>
    <div class="col"><h3>화질</h3>${P.qs.map((q,i)=>r(S.q===i,q.n||'<span class="empty">(해상도 빈 값)</span>','',won(q.p+vat(q.p)),0,`S.q=${i};render()`,1)).join('')}</div>
   </div>`,bar(`<button class="btn" onclick="backToSearch()">구매취소</button><button class="btn p" onclick="go('C')">다음</button>`)]},
 C(){const c=calc();

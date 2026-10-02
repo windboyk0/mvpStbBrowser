@@ -161,8 +161,7 @@ export default function Step2View({
       </div>
 
       <PurchaseActionBar
-        items={[prdTypLabel(product.prdTypCd), product.resolution]}
-        note={product.viewPeriod}
+        items={[prdTypLabel(product.prdTypCd), product.viewPeriod, product.resolution]}
       >
         <button type="button" className={styles.btn} onClick={onPrev} disabled={paying}>
           이전

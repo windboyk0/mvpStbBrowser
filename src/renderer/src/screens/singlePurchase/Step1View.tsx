@@ -35,10 +35,10 @@ export default function Step1View({
           </OptionRow>
         </div>
         <div className={styles.col}>
-          <h3>언어</h3>
+          <h3>시청가능기간</h3>
           <OptionRow selected>
             <div className={styles.name}>
-              <span className={styles.empty}>(빈 값)</span>
+              {product.viewPeriod || <span className={styles.empty}>(시청가능기간 빈 값)</span>}
             </div>
           </OptionRow>
         </div>
@@ -53,7 +53,7 @@ export default function Step1View({
         </div>
       </div>
 
-      <PurchaseActionBar items={[typeName, product.resolution]} note={product.viewPeriod}>
+      <PurchaseActionBar items={[typeName, product.viewPeriod, product.resolution]}>
         <button type="button" className={styles.btn} onClick={onCancel}>
           구매취소
         </button>

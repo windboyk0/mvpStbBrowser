@@ -40,3 +40,20 @@
 - 비고:
   - 결과 컬럼 형식(`DD_APPLY_END` 형식, `AMT_DISCOUNT` 기준) 은 실 DB 확인 후 조정 필요
   - Q18 ~ Q25 확인 결과가 잠정값과 다르면 `coupon.ts` 바인드 · `amount.ts` 계산 · spec 1.3 을 함께 수정
+
+## 16:40 상품 조회 DB 링크 `@REPORT` 제거
+- 작업: 수정 사유 — 실 DB 상품 조회 시 `ORA-02019: connection description for remote database not found` (접속 DB 에 DB 링크 `REPORT` 없음)
+- 변경 파일: `vibeContext/spec/020_singlePurchase/design/query_productList.sql`, `src/main/singlePurchase/sql/productList.sql`, `src/main/singlePurchase/sql/productCount.sql`, `design/singlePurchase_spec.md` (4. 설계 › 조회 Query)
+- 내용: 원본 `PPU_Select_Query.txt` 를 옮길 때 남아 있던 `BTVCMS.PD_PRD_PRC_DTS@REPORT`, `BTVCMS.PD_PRD_MST@REPORT` 의 `@REPORT` 제거 → 접속 DB 에서 `BTVCMS` 테이블 직접 조회 (사용자 지시)
+- 관련 spec: R1.1, 4. 설계 › 조회 Query
+- 비고: 실 DB 재조회 확인 필요 (`BTVCMS` 스키마 조회 권한)
+
+## 17:00 Step 1 `언어` 컬럼 → `시청가능기간` 으로 대체
+- 작업: 수정 사유 — 사용자 지시 (참고 화면의 언어 대신 시청가능기간 표시)
+- 변경 파일: `src/renderer/src/screens/singlePurchase/Step1View.tsx`, `Step2View.tsx`, `design/singlePurchase_spec.md` (1.1, R2.2, R2.4, R2.6, 레이아웃 — Step 1, Step 1 1차 데이터), `design/prototype_singlePurchase.html`
+- 내용:
+  - Step 1 컬럼: `상품 유형 | 언어 | 화질` → `상품 유형 | 시청가능기간 | 화질`. 시청가능기간 = `VIEW_PERIOD`, 빈 값이면 `(시청가능기간 빈 값)`
+  - 상품 선택 내역 (Step 1 · Step 2 액션바): `{유형} | {시청가능기간} | {해상도}` (빈 값 생략). 부가문구(`note`) 자리 미사용 — 참고 화면 부가문구 `mobile B tv에서 시청 가능` 미표시
+  - 시안: 언어 컬럼 → 시청가능기간, Mock 부가문구 제거 (시청가능기간 Mock 값은 근거 없어 빈 값)
+- 관련 spec: R2.2, R2.4, R2.6, 4. 설계 › Step 1 1차 데이터
+- 비고: `VIEW_PERIOD` · `RESOLUTION` 은 아직 Query 에서 `NULL AS ...` — 실데이터 Query 수신 후 교체 필요
