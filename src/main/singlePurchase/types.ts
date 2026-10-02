@@ -44,7 +44,31 @@ export type SearchResult =
 export interface PurchaseRequest {
   prdPrcId: string
   useBcash: boolean
+  /** 적용 쿠폰번호 (`NO_COUPON`) — null = 쿠폰 미적용 (2차) */
+  couponNo: string | null
 }
+
+/** `singlePurchase:couponList` 요청 — 2차 쿠폰 (spec 1.3 쿠폰 잠정값) */
+export interface CouponListRequest {
+  /** 선택 상품 PRD_PRC_ID → I_ID_PRODUCT */
+  prdPrcId: string
+  /** 판매가 SALE_PRC (공급가) → I_AMT_PRICE */
+  salePrc: number
+}
+
+export interface CouponRow {
+  /** NO_COUPON → IF-EPS-001 couponNo */
+  couponNo: string
+  /** NM_COUPON */
+  name: string
+  /** AMT_DISCOUNT (공급가 기준 할인액) */
+  discount: number
+  /** DD_APPLY_END */
+  applyEnd: string
+}
+
+/** `singlePurchase:couponList` 응답 */
+export type CouponListResult = { ok: true; rows: CouponRow[] } | { ok: false; message: string }
 
 /** `singlePurchase:purchase` 응답 — [D] 구매완료 표시용 */
 export interface PurchaseResult {

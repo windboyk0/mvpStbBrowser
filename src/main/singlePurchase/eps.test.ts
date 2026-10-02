@@ -45,6 +45,27 @@ describe('IF-EPS-001 요청 매핑', () => {
   })
 })
 
+describe('IF-EPS-001 쿠폰 매핑 (R6.7)', () => {
+  const base = { serverUrl: 'http://stg.example', prdPrcId: 'P1', stbId: 'STB1', now }
+
+  it('쿠폰 적용 → useCoupon true + couponNo', () => {
+    const req = buildEpsRequest({ ...base, useBcash: false, couponNo: 'C001' })
+    expect(req.body).toMatchObject({ useCoupon: true, couponNo: 'C001', useBcash: false })
+  })
+
+  it('쿠폰 미적용 (null / 생략 / 빈 값) → useCoupon false + couponNo null', () => {
+    for (const couponNo of [null, undefined, '']) {
+      const req = buildEpsRequest({ ...base, useBcash: false, couponNo })
+      expect(req.body).toMatchObject({ useCoupon: false, couponNo: null })
+    }
+  })
+
+  it('B캐시 매핑은 쿠폰과 무관하게 유지', () => {
+    const req = buildEpsRequest({ ...base, useBcash: true, couponNo: 'C001' })
+    expect(req.body).toMatchObject({ useCoupon: true, couponNo: 'C001', useBcash: true })
+  })
+})
+
 describe('IF-EPS-001 응답 해석', () => {
   it('성공 0000', () => {
     expect(interpretResponse({ result: '0000', reason: 'OK' })).toEqual({

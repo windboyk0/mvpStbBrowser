@@ -10,6 +10,8 @@ export interface EpsRequestInput {
   prdPrcId: string
   stbId: string
   useBcash: boolean
+  /** 적용 쿠폰번호 (`NO_COUPON`) — null/생략 = 쿠폰 미적용 (2차, R6.7) */
+  couponNo?: string | null
   now: Date
 }
 
@@ -50,6 +52,8 @@ export function buildEpsRequest(input: EpsRequestInput): EpsRequest {
     Referer: ''
   }
 
+  const couponNo = input.couponNo || null
+
   // mac 은 규격상 "Mac Address 없을 경우 생략"
   const body: Record<string, unknown> = {
     if: 'IF-EPS-001',
@@ -59,8 +63,8 @@ export function buildEpsRequest(input: EpsRequestInput): EpsRequest {
     response_format: 'json',
     stb_id: input.stbId,
     requestDateTime: formatDateTime(input.now),
-    useCoupon: false,
-    couponNo: null,
+    useCoupon: couponNo !== null,
+    couponNo,
     useBcash: input.useBcash,
     useNewBpoint: false,
     useOcb: false,

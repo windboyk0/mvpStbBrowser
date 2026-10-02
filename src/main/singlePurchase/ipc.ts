@@ -1,4 +1,5 @@
 import type { IpcMain } from 'electron'
+import { couponList } from './coupon'
 import { purchase } from './purchase'
 import { search } from './search'
 import { missingSettings } from './settings'
@@ -17,4 +18,5 @@ export function register(ipc: IpcMain): void {
   })
   ipc.handle('singlePurchase:search', (_e, payload: unknown) => search(payload))
   ipc.handle('singlePurchase:purchase', (_e, payload: unknown) => purchase(payload))
+  ipc.handle('singlePurchase:couponList', (_e, payload: unknown) => couponList(payload))
 }

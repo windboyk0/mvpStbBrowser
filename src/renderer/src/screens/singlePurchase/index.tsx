@@ -3,9 +3,12 @@ import { Modal } from './components'
 import DoneView from './DoneView'
 import SearchView, { type SearchFilter, type SearchState } from './SearchView'
 import Step1View from './Step1View'
-import Step2View from './Step2View'
+import Step2View, { type CouponState } from './Step2View'
 import type {
   CheckSettingsResult,
+  CouponListRequest,
+  CouponListResult,
+  CouponRow,
   ProductRow,
   PurchaseRequest,
   PurchaseResult,
@@ -36,6 +39,9 @@ export default function SinglePurchaseScreen(): React.JSX.Element {
   const [confirmTarget, setConfirmTarget] = useState<ProductRow | null>(null)
   const [product, setProduct] = useState<ProductRow | null>(null)
   const [useBcash, setUseBcash] = useState(false)
+  const [couponState, setCouponState] = useState<CouponState>({ status: 'loading' })
+  const [coupon, setCoupon] = useState<CouponRow | null>(null)
+  const couponSeq = useRef(0)
   const [paying, setPaying] = useState(false)
   const [purchaseResult, setPurchaseResult] = useState<PurchaseResult | null>(null)
 
@@ -86,6 +92,7 @@ export default function SinglePurchaseScreen(): React.JSX.Element {
     if (!confirmTarget) return
     setProduct(confirmTarget)
     setUseBcash(false)
+    setCoupon(null)
     setPurchaseResult(null)
     setConfirmTarget(null)
     setRoute('B')
@@ -94,7 +101,11 @@ export default function SinglePurchaseScreen(): React.JSX.Element {
   const pay = (): void => {
     if (!product || paying) return
     setPaying(true)
-    const req: PurchaseRequest = { prdPrcId: product.prdPrcId, useBcash }
+    const req: PurchaseRequest = {
+      prdPrcId: product.prdPrcId,
+      useBcash,
+      couponNo: coupon?.couponNo ?? null
+    }
     window.api
       .invoke<PurchaseResult>('singlePurchase:purchase', req)
       .catch((): PurchaseResult => ({ ok: false, message: '구매 요청에 실패했습니다.' }))
@@ -105,18 +116,43 @@ export default function SinglePurchaseScreen(): React.JSX.Element {
       })
   }
 
+  // R6.1 Step 2 진입 시 사용가능 쿠폰 조회 — 적용 중 쿠폰은 새 결과에 있으면 유지
+  const enterStep2 = (): void => {
+    if (!product) return
+    const seq = ++couponSeq.current
+    setRoute('C')
+    setCouponState({ status: 'loading' })
+    const req: CouponListRequest = { prdPrcId: product.prdPrcId, salePrc: product.salePrc }
+    window.api
+      .invoke<CouponListResult>('singlePurchase:couponList', req)
+      .catch((err: unknown): CouponListResult => ({
+        ok: false,
+        message: err instanceof Error ? err.message : String(err)
+      }))
+      .then((result) => {
+        if (seq !== couponSeq.current) return
+        setCouponState({ status: 'done', result })
+        setCoupon((prev) =>
+          prev && result.ok ? (result.rows.find((c) => c.couponNo === prev.couponNo) ?? null) : null
+        )
+      })
+  }
+
   const closeConfirm = useCallback(() => setConfirmTarget(null), [])
 
   let view: React.JSX.Element
   if (route === 'B' && product) {
-    view = <Step1View product={product} onCancel={backToSearch} onNext={() => setRoute('C')} />
+    view = <Step1View product={product} onCancel={backToSearch} onNext={enterStep2} />
   } else if (route === 'C' && product) {
     view = (
       <Step2View
         product={product}
         useBcash={useBcash}
+        couponState={couponState}
+        coupon={coupon}
         paying={paying}
         onToggleBcash={() => setUseBcash((v) => !v)}
+        onCouponChange={setCoupon}
         onPrev={() => setRoute('B')}
         onCancel={backToSearch}
         onPay={pay}
