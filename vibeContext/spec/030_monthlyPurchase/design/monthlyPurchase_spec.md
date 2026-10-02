@@ -1,4 +1,4 @@
-# 030_monthlyPurchase — 월정액구매 Spec (v1.0 확정)
+# 030_monthlyPurchase — 월정액구매 Spec (v1.0 확정 · v1.1 쿠폰 작성 중)
 
 ## 0. 구현 전 필독
 
@@ -6,6 +6,7 @@
 2. 아래 **참고 파일** 목록의 파일을 확인한다.
 3. 구현 완료 또는 수정 후에는 `../history/`에 이력을 작성한다. (규칙: 루트 `CLAUDE.md` › Spec 구조)
 4. **구현은 `1.1 1차 확정 범위` 만 진행한다.** `추후` 항목은 구현하지 않는다.
+   - `1.2 2차 범위 — 쿠폰` 은 **작성 중** — 사용자 구현 지시(2026-10-02)에 따라 확인 필요 항목(Q6 ~ Q12)은 **`1.3 쿠폰 잠정값`** 으로 구현한다. 확인 결과가 바뀌면 수정이력으로 반영
 5. **모듈 원칙 (낮은 결합도 · 높은 응집도):** 이 spec 만으로 구현한다. 다른 화면 spec · 소스를 참조하지 않으며, 다른 화면과 **병렬로 동시에** 구현된다. 공유는 루트 `CLAUDE.md` › 화면 모듈 계약(폴더 소유권 · 연결 방식 · 설정값 계약)으로만 한다
 6. **실제 서버 주소 · Api_Key · Auth_Val · 계정 등 실제 값을 코드 · 문서에 기재하지 않는다.** 서버 주소 · 식별 정보는 설정값을 사용한다
 
@@ -15,7 +16,7 @@
 |---|---|
 | 소유 폴더 (생성 · 수정) | `src/renderer/src/screens/monthlyPurchase/**`, `src/main/monthlyPurchase/**`, `vibeContext/spec/030_monthlyPurchase/**` |
 | 진입점 | renderer `screens/monthlyPurchase/index.tsx` (default export), main `main/monthlyPurchase/ipc.ts` (`register(ipcMain)`) |
-| IPC 채널 | `monthlyPurchase:search` (목록 · 건수), `monthlyPurchase:agreements` (약정 옵션), `monthlyPurchase:purchase` (STB ID 조회 + IF-EPS-001), `monthlyPurchase:checkSettings` (필수 설정 존재 여부) |
+| IPC 채널 | `monthlyPurchase:search` (목록 · 건수), `monthlyPurchase:agreements` (약정 옵션), `monthlyPurchase:purchase` (STB ID 조회 + IF-EPS-001), `monthlyPurchase:checkSettings` (필수 설정 존재 여부), `monthlyPurchase:couponList` (사용가능 쿠폰 조회 — 2차) |
 | 사용 (계약) | 설정값 **읽기** — CLAUDE.md › 설정값 계약 대로 store 를 이 모듈 안에서 직접 읽고 복호화. Oracle 접속(oracledb Thin) · IF-EPS-001 호출도 이 모듈 안에서 직접 |
 | 사용 (읽기 전용) | 디자인 토큰 `src/renderer/src/styles/*`, `window.api.invoke`, 화면 이동 `app:navigate` 이벤트 |
 | 수정 금지 | 다른 화면 폴더, 공통 파일(`App.tsx`, `menus.ts`, `preload/index.ts`, `main/index.ts`, `package.json`) |
@@ -29,6 +30,8 @@
 | Query | `query_productList_{유형}.sql` (7개) | [A] 상품유형별 목록 · 전체 건수 — 매핑은 R1.2 |
 | Query | `query_agreementList.sql` | [C] 약정기간 옵션 (무약정 제외) |
 | Query | `query_stbId.sql` | IF-EPS-001 요청 직전 STB ID 조회 (이 모듈 소유 사본) |
+| Query | `query_couponList.sql` | [C] 사용가능 쿠폰 조회 Procedure 호출 (바인드 변수 · REF CURSOR, Package 정의 전체 복사, 이 모듈 소유 사본) — 2차 |
+| Query 원본 | `vibeContext/Reference/020_singlePurchase/Query/사용가능쿠폰조회.txt` | 사용가능 쿠폰 조회 Procedure 원본 — 로컬 전용 · 추후 삭제 (구현에는 위 `query_couponList.sql` 사용) |
 | Query 원본 | `vibeContext/Reference/030_monthlyPurchase/Query/*.txt` | 로컬 전용 · 추후 삭제 (구현에는 위 `query_*.sql` 사용) |
 | 연동정의서 | `vibeContext/Reference/030_monthlyPurchase/Api/IF-EPS-001.pdf` | 로컬 전용 · 필요한 내용은 이 spec 4. 설계 에 반영됨 |
 | 디자인 토큰 | 루트 `CLAUDE.md` › Design Tone | |
@@ -51,6 +54,30 @@
 | [D] 구매완료 | 전체 | — |
 
 - 추후 항목의 행은 화면에 표시하되 **비활성**(☒, 클릭 불가)
+
+### 1.2 2차 범위 — 쿠폰 (작성 중)
+
+할인 수단을 **하나씩** 추가한다. 2차는 **쿠폰만** 다룬다 (T멤버십은 계속 비활성).
+
+| 구분 | 2차 (구현) | 추후 |
+|---|---|---|
+| [C] 할인 수단 쿠폰 | 진입 시 사용가능 쿠폰 조회 (DB Procedure, `query_couponList.sql`), 쿠폰 목록에서 1장 선택, 할인 금액 반영 (R5) | — |
+| 구매 요청 | IF-EPS-001 `useCoupon` / `couponNo` | — |
+
+- 쿠폰과 다른 할인 수단을 함께 쓸 때의 규칙은 **2차에서 다루지 않는다** (할인 수단별로 따로 진행)
+- 할인 금액은 Procedure 결과값을 사용한다 — **IF-EPS-005(할인금액조회)는 사용하지 않는다**
+
+### 1.3 쿠폰 잠정값 (제가 정한 부분 — 확인 필요, 구현은 이 값으로)
+
+| # | 항목 | 잠정값 |
+|---|---|---|
+| Q6 | 파라미터 | `I_ID_CUST_SVC` = 서비스관리번호, `I_ID_PRODUCT` = 선택 행 `ID_PRODUCT`, `I_PRD_AGMT_ID` = 선택 약정 `PRD_AGMT_ID`(무약정 NULL), `I_CTZ_CORP_SER_NUM` = 서비스관리번호로 `IESM_CUST_SVC` 조회 (Query 내부) |
+| Q7 | `I_AMT_PRICE` | 선택 약정 옵션 가격 (부가세 포함) |
+| Q8 | 약정 변경 시 | 파라미터(약정 ID · 금액)가 바뀌므로 **쿠폰 재조회 + 적용 중인 쿠폰 해제**. 결과 `PRD_AGMT_ID` 는 별도 필터하지 않음 (Procedure 결과 그대로) |
+| Q9 | 쿠폰명 / 쿠폰번호 / 유효기간 | `NM_COUPON` / `NO_COUPON` → `couponNo` / `DD_APPLY_END` |
+| Q10 | 할인 금액 | `AMT_DISCOUNT` = 부가세 포함 기준 할인액, **상품 금액을 넘으면 상품 금액까지만** |
+| Q11 | 쿠폰 조회 실패 | 쿠폰 행 비활성(☒) + 쿠폰 행에 `조회에 실패했습니다. ({오류 메시지})` (`danger`) |
+| Q12 | 쿠폰 선택 팝업 | 4. 설계 › 쿠폰 선택 팝업 안 그대로 |
 
 ## 2. 화면 흐름
 
@@ -150,6 +177,43 @@
 - R4.3 버튼: `[홈으로]` → `app:navigate` `main`, `[구매 계속하기]` (`primary`) → 2. 공통 동작
 - R4.4 참고(표시하지 않음): `senderPurchaseNo`, `purchaseType`(`VODPPM` / `IPTVPPM`), `productName`, `needsCancel`, `purchaseList`
 
+### R5. [C] 할인 수단 쿠폰 (2차 — 작성 중)
+- R5.1 **[C] 화면 진입 시** main 에서 사용가능 쿠폰을 조회한다 (`monthlyPurchase:couponList`, `query_couponList.sql`)
+  - Procedure `BTVSMS.UI5_ITP_PKG_COUPON_APPLY_LIST.P_COPN_APLYPSBL_LIST` 호출, OUT REF CURSOR 결과를 전부 읽는다
+  - 약정 옵션 변경 시 재조회 여부 — 확인 필요 (Q8, 잠정: 재조회 + 적용 쿠폰 해제)
+- R5.2 입력 파라미터 (바인드 변수)
+
+| 파라미터 | 값 | 상태 |
+|---|---|---|
+| `I_ID_CUST_SVC` | 설정 › 서비스관리번호 (`svcMgmtNo`) | 확인 필요 (Q6) |
+| `I_ID_PRODUCT` | 선택 행 `ID_PRODUCT` | 확인 필요 (Q6) |
+| `I_PRD_AGMT_ID` | 선택 약정 옵션의 `PRD_AGMT_ID`, 무약정 = NULL | 확인 필요 (Q6) |
+| `I_ID_CONTENTS` | NULL | — |
+| `I_AMT_PRICE` | 선택 약정 옵션 가격 (부가세 포함) | 확인 필요 (Q7) |
+| `I_CTZ_CORP_SER_NUM` | 주민법인일련번호 — 같은 PL/SQL 블록 안에서 `SELECT CTZ_CORP_SER_NUM FROM IESM_CUST_SVC WHERE ID_CUST_SVC = :svcMgmtNo` 로 조회해 전달 (상품 조회 Query 와 같은 방식, 별도 입력 없음) | 확인 필요 (Q6) |
+
+- 실행 형태: `query_couponList.sql` 은 **PL/SQL 익명 블록** (`DECLARE … BEGIN … END;`) — `connection.execute` 로 실행하고 OUT 바인드 `couponCursor` (`type: oracledb.CURSOR, dir: oracledb.BIND_OUT`) 의 ResultSet 을 끝까지 읽은 뒤 닫는다
+  - **끝의 `END;` 세미콜론을 제거하지 않는다** — 기존 `sql.ts` 는 Query 끝 `;` 를 제거하므로 이 파일에는 적용하지 않아야 함 (헤더 주석 제거는 그대로 사용 가능, 목록/건수 분리 대상 아님)
+  - 서비스관리번호가 `IESM_CUST_SVC` 에 없으면 `ORA-01403` → 조회 실패 (R5.6)
+- R5.3 결과 필드 사용
+
+| 결과 필드 | 사용 | 상태 |
+|---|---|---|
+| `NO_COUPON` | 쿠폰번호 → IF-EPS-001 `couponNo` | 제가 정한 부분 (Q9) |
+| `NM_COUPON` / `NM_COUPON2` | 화면 쿠폰명 — 둘 중 어느 쪽인지 | 확인 필요 (Q9) |
+| `AMT_DISCOUNT` | 할인 금액 | 부가세 포함 기준 여부 확인 필요 (Q10) |
+| `DD_APPLY_END` / `EXPIRE_DAY` | 쿠폰 목록의 유효기간 표시 | 제가 정한 부분 (Q9) |
+| `PRD_AGMT_ID` / `PRD_AGMT_PERD_CD` | 쿠폰 대상 약정 — 선택 약정과 맞지 않는 쿠폰 처리 | 확인 필요 (Q8) |
+| 그 외 (`FG_DISC`, `VAL_DISC`, `YN_DUP_APPLY`, `LANDING_*`, `DTL_DESC`, `PPM_DC_MON` …) | 2차 미사용 | — |
+
+- R5.4 **쿠폰 0건이면 쿠폰 행 비활성**(☒, 클릭 불가, 금액 `0원`) — 1차와 같은 표시
+- R5.5 쿠폰이 1건 이상이면 쿠폰 행 활성 → **목록을 보여 주고 사용자가 1장 고른다** (4. 설계 › 쿠폰 선택 팝업)
+  - 선택하면 쿠폰 행 체크 + 쿠폰명 · 할인 금액 표시 → 결제 금액 패널 할인 금액 · 구매 금액 · `[N원 결제]` 반영
+  - 체크 해제 시 쿠폰 미적용 (할인 금액 `0원`)
+- R5.6 조회 실패 (DB 접속 · Procedure 오류) 시 처리 — 확인 필요 (Q11)
+- R5.7 결제 금액: 상품 금액 = 선택 약정 가격 (부가세 포함) / 할인 금액 = `-AMT_DISCOUNT` / 부가세 = `포함` / 구매 금액 = 상품 금액 − 할인 금액. 할인 금액이 상품 금액보다 클 때 처리 — 확인 필요 (Q10)
+- R5.8 구매 요청: 쿠폰 적용 시 IF-EPS-001 `useCoupon: true`, `couponNo: NO_COUPON` / 미적용 시 `false` / null
+
 ---
 
 ## 4. 설계
@@ -199,6 +263,23 @@
 | 결제 금액 패널 | `surface` 카드, 구매 금액 26px + 밑줄 `primary` |
 | 하단 액션바 | 배경 `#120F26`, 상단 1px 라인, 버튼 높이 약 56px |
 
+### 레이아웃 — 쿠폰 선택 팝업 (2차 — 작성 중, 제가 정한 부분 Q12)
+
+```
+        ┌────────────────────────────────────────────────┐
+        │ 쿠폰 선택                                       │
+        │ ─────────────────────────────────────────────  │
+        │ {쿠폰명}                 ~{유효기간}   -N원     │ ← 행 클릭 = 선택 · 팝업 닫힘
+        │ {쿠폰명}                 ~{유효기간}   -N원     │
+        │ …                                    (세로 스크롤) │
+        │                                       [취소]   │
+        └────────────────────────────────────────────────┘
+```
+- 열기: [C] 쿠폰 행(미적용 상태) 클릭. 화면 가운데 모달(`surface`, 모서리 14px), 배경 어둡게. Esc / 배경 클릭 / `[취소]` = 선택 없이 닫기
+- 행 hover: 테두리 `focus` + 배경 `surface-2`. 이미 적용 중인 쿠폰은 텍스트 `focus`
+- 적용된 상태에서 쿠폰 행 클릭 = 체크 해제 (R5.5)
+- 쿠폰 행에 `자동 적용` 말풍선은 표시하지 않음 (사용자 선택)
+
 ### 레이아웃 — [D] 구매완료
 - 화면 가운데: 아이콘(✔ 성공 `#3DDC97` / ✖ 에러 `danger`, 64px) → 메시지 24px → `[홈으로]` `[구매 계속하기]`(`primary`)
 
@@ -226,7 +307,7 @@
 | `mac` | 생략 |
 | `requestDateTime` | 요청 시각 `YYYYMMDDHH24MISS` |
 | `prdAgmtId` | 선택 약정의 `PRD_AGMT_ID`, 무약정 = null |
-| `useCoupon` / `couponNo` | `false` / null |
+| `useCoupon` / `couponNo` | 쿠폰 적용 시 `true` / `NO_COUPON`, 미적용 시 `false` / null (2차 — R5.8, 1차는 `false` / null) |
 | `useBcash` · `useNewBpoint` | `false` |
 | `useUniverseDiscount` · `useUniversePoint` · `useTmembership` | `false` |
 | `useOcb` / `ocbAmount` / `ocbSequence` / `ocbPassword` | `false` / `0` / `0` / null |
@@ -257,7 +338,14 @@
 - [x] T7. [C] 화면 (약정 · 결제 수단 · 할인 수단 · 금액 패널 · 액션바) + 약정 선택 규칙 단위 테스트 — R2
 - [x] T8. `monthlyPurchase:purchase` — STB ID 조회 → IF-EPS-001 요청 · 응답 파싱 — R3, 4. 설계 › IF-EPS-001 요청 매핑
 - [x] T9. [D] 구매완료 화면 + `[구매취소]` / `[구매 계속하기]` 복귀 (조건 · 페이지 유지 자동 조회) — R4, 2. 공통 동작
-- 추후: 쿠폰 · T멤버십 활성, 청구서 외 결제 수단
+
+### 2차 — 쿠폰 (작성 중 · `1.3 쿠폰 잠정값` 으로 구현)
+- [ ] T10. `monthlyPurchase:couponList` — `query_couponList.sql` Procedure 호출 · REF CURSOR 읽기 (끝 `;` 유지) — R5.1 ~ R5.3, R5.6
+- [ ] T11. [C] 쿠폰 행 활성화 + 쿠폰 선택 팝업 (0건 비활성, 선택 · 해제) — R5.4, R5.5, 4. 설계 › 쿠폰 선택 팝업
+- [ ] T12. 결제 금액에 쿠폰 할인 반영 + 단위 테스트 (쿠폰 미적용 / 적용) — R5.7
+- [ ] T13. IF-EPS-001 `useCoupon` / `couponNo` 매핑 + 단위 테스트 — R5.8
+
+- 추후: T멤버십 활성, 할인 수단 동시 적용 규칙, 청구서 외 결제 수단
 
 ---
 
@@ -270,3 +358,11 @@
 | Q3 | `'802059'` | 주민법인일련번호 — 서비스관리번호로 조회 (Query 내부) |
 | Q4 | 약정 Query | `query_agreementList.sql` 반영 |
 | Q5 | OMNI | 조회에서 제외 |
+| Q6 | 쿠폰 파라미터: `I_ID_CUST_SVC` = 서비스관리번호, `I_ID_PRODUCT` = `ID_PRODUCT`, `I_PRD_AGMT_ID` = 선택 약정 `PRD_AGMT_ID`(무약정 NULL), `I_CTZ_CORP_SER_NUM` = 서비스관리번호로 조회한 주민법인일련번호 — 맞는지 | 확인 필요 |
+| Q7 | 쿠폰 `I_AMT_PRICE` = 선택 약정 옵션 가격(부가세 포함) 인지 | 확인 필요 |
+| Q8 | 약정 옵션 변경 시 쿠폰 재조회 여부 / 적용 중인 쿠폰 처리, 결과 `PRD_AGMT_ID` 와 선택 약정이 다른 쿠폰 처리 | 확인 필요 |
+| Q9 | 쿠폰명 `NM_COUPON` / `NM_COUPON2` 중 표시 필드, `NO_COUPON` → `couponNo`, 유효기간 `DD_APPLY_END` 표시 (제가 정한 부분) | 확인 필요 |
+| Q10 | `AMT_DISCOUNT` 부가세 포함 기준 여부, 할인 금액 > 상품 금액 처리 | 확인 필요 |
+| Q11 | 쿠폰 조회 실패 시 표시 (쿠폰 행 비활성만 / 오류 메시지 등) | 확인 필요 |
+| Q12 | 쿠폰 선택 팝업 구성 · 해제 방식 · `자동 적용` 말풍선 미표시 (제가 정한 부분) | 확인 필요 |
+| Q13 | 쿠폰 조회 IF-EPS-005(할인금액조회) | 사용 안 함 — Procedure `AMT_DISCOUNT` 사용 |
