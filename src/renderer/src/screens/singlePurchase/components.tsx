@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { IconCheck, IconX } from '@tabler/icons-react'
-import { cx } from './format'
+import { cx, won } from './format'
+import type { CouponRow } from './types'
 import styles from './singlePurchase.module.css'
 
 // 단건구매 화면 전용 컴포넌트 (spec 4. 설계 › 컴포넌트) — 다른 화면과 공유하지 않는다
@@ -149,6 +150,61 @@ export function Modal({
           </button>
           <button type="button" className={cx(styles.btn, styles.primary)} onClick={onOk}>
             {okLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface CouponModalProps {
+  coupons: CouponRow[]
+  /** 적용 중인 쿠폰번호 — 텍스트 `focus` */
+  appliedNo: string | null
+  onSelect: (coupon: CouponRow) => void
+  onCancel: () => void
+}
+
+/** 쿠폰 선택 팝업 (4. 설계 › 쿠폰 선택 팝업) — 행 클릭 = 선택 · 닫힘, Esc / 배경 / [취소] = 선택 없이 닫기 */
+export function CouponModal({
+  coupons,
+  appliedNo,
+  onSelect,
+  onCancel
+}: CouponModalProps): React.JSX.Element {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') onCancel()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onCancel])
+
+  return (
+    <div
+      className={styles.modalBg}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onCancel()
+      }}
+    >
+      <div className={cx(styles.modal, styles.couponModal)} role="dialog" aria-modal="true">
+        <h3 className={styles.couponTitle}>쿠폰 선택</h3>
+        <div className={styles.couponList}>
+          {coupons.map((c) => (
+            <div
+              key={c.couponNo}
+              className={cx(styles.couponItem, c.couponNo === appliedNo && styles.couponItemOn)}
+              onClick={() => onSelect(c)}
+            >
+              <span className={styles.couponName}>{c.name}</span>
+              <span className={styles.couponEnd}>{c.applyEnd && `~${c.applyEnd}`}</span>
+              <span className={styles.couponAmt}>-{won(c.discount)}</span>
+            </div>
+          ))}
+        </div>
+        <div className={styles.modalActs}>
+          <button type="button" className={styles.btn} onClick={onCancel}>
+            취소
           </button>
         </div>
       </div>

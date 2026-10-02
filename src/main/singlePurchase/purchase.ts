@@ -42,6 +42,7 @@ export async function purchase(payload: unknown): Promise<PurchaseResult> {
     prdPrcId,
     stbId,
     useBcash: req?.useBcash === true,
+    couponNo: typeof req?.couponNo === 'string' && req.couponNo.trim() ? req.couponNo.trim() : null,
     now: new Date()
   })
 

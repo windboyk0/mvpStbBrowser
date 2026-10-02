@@ -478,10 +478,10 @@
 - [x] T10. `[구매취소]` / `[구매 계속하기]` 복귀 (조회조건 유지 + 자동 조회) — 2. 공통 동작
 
 ### 2차 — 쿠폰 (작성 중 · `1.3 쿠폰 잠정값` 으로 구현)
-- [ ] T11. [C] 쿠폰 조회 (main, `query_couponList.sql` Procedure 호출 · REF CURSOR 읽기, IPC `singlePurchase:couponList`) — R6.1 ~ R6.3, R6.6
-- [ ] T12. [C] Step 2 쿠폰 행 활성화 + 쿠폰 선택 팝업 (0건 비활성, 선택 · 해제) — R6.4, R6.5, 4. 설계 › 쿠폰 선택 팝업
-- [ ] T13. 금액 계산에 쿠폰 할인 반영 + 단위 테스트 (쿠폰 전액 / 부분 할인) — 4. 설계 › 금액 계산 › 쿠폰 적용 시
-- [ ] T14. IF-EPS-001 `useCoupon` / `couponNo` 매핑 + 단위 테스트 — R6.7
+- [x] T11. [C] 쿠폰 조회 (main, `query_couponList.sql` Procedure 호출 · REF CURSOR 읽기, IPC `singlePurchase:couponList`) — R6.1 ~ R6.3, R6.6
+- [x] T12. [C] Step 2 쿠폰 행 활성화 + 쿠폰 선택 팝업 (0건 비활성, 선택 · 해제) — R6.4, R6.5, 4. 설계 › 쿠폰 선택 팝업
+- [x] T13. 금액 계산에 쿠폰 할인 반영 + 단위 테스트 (쿠폰 전액 / 부분 할인) — 4. 설계 › 금액 계산 › 쿠폰 적용 시
+- [x] T14. IF-EPS-001 `useCoupon` / `couponNo` 매핑 + 단위 테스트 — R6.7
 
 - 추후: OK캐쉬백 · T멤버십 · TV포인트, 할인 수단 동시 적용 규칙, 청구서 외 결제 수단, Step 1 다중 옵션, 쿠폰 `I_ID_CONTENTS`(PPV)
 

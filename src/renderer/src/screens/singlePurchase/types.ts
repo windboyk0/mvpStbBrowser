@@ -33,7 +33,29 @@ export type SearchResult =
 export interface PurchaseRequest {
   prdPrcId: string
   useBcash: boolean
+  /** 적용 쿠폰번호 (`NO_COUPON`) — null = 쿠폰 미적용 */
+  couponNo: string | null
 }
+
+/** `singlePurchase:couponList` 요청 */
+export interface CouponListRequest {
+  prdPrcId: string
+  /** 판매가 (공급가) */
+  salePrc: number
+}
+
+export interface CouponRow {
+  /** NO_COUPON */
+  couponNo: string
+  /** NM_COUPON */
+  name: string
+  /** AMT_DISCOUNT (공급가 기준) */
+  discount: number
+  /** DD_APPLY_END */
+  applyEnd: string
+}
+
+export type CouponListResult = { ok: true; rows: CouponRow[] } | { ok: false; message: string }
 
 export interface PurchaseResult {
   ok: boolean
